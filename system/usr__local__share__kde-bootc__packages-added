@@ -86,8 +86,14 @@ distrobox
 duf
 fzf
 gh
+gum
 git-crypt
 pass
+containerd
+docker
+docker-buildx
+docker-compose
+moby-engine
 
 # Utilities
 git
