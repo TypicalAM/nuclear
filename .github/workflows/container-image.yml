@@ -2,8 +2,9 @@ name: Build image
 run-name: Build image
 on: 
   workflow_dispatch:
-  branches:
-  - '**'
+  push:
+    branches:
+    - '**'
   schedule:
   - cron: '30 13 * * FRI'    # Triggers Fri at 13:30
 
