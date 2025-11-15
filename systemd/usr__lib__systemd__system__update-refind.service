@@ -1,0 +1,11 @@
+[Unit]
+Description=Rebuild rEFInd config after rpm-ostree deployment
+Requires=ostree-finalize-staged.service
+After=ostree-finalize-staged.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update-refind
+
+[Install]
+WantedBy=multi-user.target

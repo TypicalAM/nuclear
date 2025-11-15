@@ -45,6 +45,10 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
 # Enable Supergfxctl
 RUN bash -c "git clone https://gitlab.com/asus-linux/supergfxctl /tmp/supergfxctl && cd /tmp/supergfxctl && make && make install"
 
+# Build
+COPY ./refind-script.go /tmp/refind-script.go
+RUN go build /tmp/refind-script.go -o /usr/local/bin/update-refind
+
 # USERS
 COPY --chmod=0644 ./system/usr__lib__credstore__home.create.admin /usr/lib/credstore/home.create.admin
 
@@ -56,6 +60,7 @@ RUN /tmp/scripts/config-authselect && rm -r /tmp/scripts
 COPY --chmod=0644 ./systemd/usr__lib__systemd__system__firstboot-setup.service /usr/lib/systemd/system/firstboot-setup.service
 COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.service /usr/lib/systemd/system/bootc-fetch.service
 COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.timer /usr/lib/systemd/system/bootc-fetch.timer
+COPY --chmod=0644 ./systemd/usr__lib__systemd__system__update-refind.service /usr/lib/systemd/system/update-refind.service
 
 RUN systemctl enable firstboot-setup.service
 RUN systemctl enable bootloader-update.service
