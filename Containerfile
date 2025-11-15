@@ -20,12 +20,11 @@ RUN dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable
 COPY ./system/etc__yum.repos.d/* /etc/yum.repos.d/
 
 # INSTALL PACKAGES
-RUN grep -vE '^#' /usr/local/share/kde-bootc/packages-added | xargs dnf -y install --allowerasing
-
-# REMOVE PACKAGES
-RUN grep -vE '^#' /usr/local/share/kde-bootc/packages-removed | xargs dnf -y remove
-RUN dnf -y autoremove
-RUN dnf clean all
+RUN grep -vE '^#' /usr/local/share/kde-bootc/packages-added | xargs dnf -y install --allowerasing && \
+		grep -vE '^#' /usr/local/share/kde-bootc/packages-removed | xargs dnf -y remove && \
+		dnf -y autoremove && \
+		dnf clean all && \
+		rm -rf /var/cache/dnf
 
 # CONFIGURATION
 COPY --chmod=0755 ./system/usr__local__bin/* /usr/local/bin/
