@@ -6,6 +6,8 @@
 looking-glass-client
 steam
 systemd-devel
+wezterm
+jq
 gparted
 neovim
 bat

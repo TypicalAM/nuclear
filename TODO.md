@@ -14,7 +14,6 @@
 nwg-displays
 hyprland
 hyprpaper
-wezterm
 hypridle
 hyprlock
 hyprpolkitagent
@@ -30,7 +29,6 @@ gvfs
 gvfs-mtp
 ImageMagick
 inxi
-jq
 kvantum
 nano
 network-manager-applet
