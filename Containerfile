@@ -49,28 +49,31 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
     systemctl mask bootc-fetch-apply-updates.timer && \
     find /var/log -type f ! -empty -delete && \
     bootc container lint
-
-FROM base AS nvidia
-
-COPY --chmod=0644 ./system/etc__supergfxd.conf /etc/supergfxd.conf
-COPY --chmod=0644 ./system/etc__tmpfiles.d__10-looking-glass.conf /etc/tmpfiles.d/10-looking-glass.conf
-COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added-nvidia /usr/share/tygrys20/packages-added-nvidia
-
-RUN <<EOF
-set -euox pipefail
-
-kver=$(cd /usr/lib/modules && echo *)
-grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing
-dnf -y autoremove
-dnf clean all
-systemctl enable supergfxd.service
-
-rm -rf /var/run*
-/scripts/kmod-build
-
-find /var/log -type f ! -empty -delete
-bootc container lint
-EOF
-
-# dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld && \
-# dnf swap -y mesa-vdpau-drivers mesa-vdpau-drivers-freeworld && \
+#
+# FROM base AS nvidia
+#
+# COPY --chmod=0644 ./system/etc__supergfxd.conf /etc/supergfxd.conf
+# COPY --chmod=0644 ./system/etc__tmpfiles.d__10-looking-glass.conf /etc/tmpfiles.d/10-looking-glass.conf
+# COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added-nvidia /usr/share/tygrys20/packages-added-nvidia
+#
+# RUN <<EOF
+# set -euox pipefail
+#
+# kver=$(cd /usr/lib/modules && echo *)
+# grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing
+# echo test
+# exit 1
+#
+# dnf -y autoremove
+# dnf clean all
+# systemctl enable supergfxd.service
+#
+# rm -rf /var/run*
+# /scripts/kmod-build
+#
+# find /var/log -type f ! -empty -delete
+# bootc container lint
+# EOF
+#
+# # dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld && \
+# # dnf swap -y mesa-vdpau-drivers mesa-vdpau-drivers-freeworld && \

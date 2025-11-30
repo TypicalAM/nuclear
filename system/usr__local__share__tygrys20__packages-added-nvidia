@@ -6,4 +6,4 @@ akmod-nvidia
 supergfxd
 xorg-x11-drv-nvidia-cuda
 nvidia-container-toolkit
-nvidia-vaapi-driver
+akmods
