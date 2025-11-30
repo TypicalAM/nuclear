@@ -20,9 +20,6 @@ COPY --chmod=0644 ./system/usr__lib__credstore__home.create.admin /usr/lib/creds
 COPY --chmod=0755 ./scripts/* /tmp/scripts/
 COPY --chmod=0755 ./refind-script.go /tmp/refind-script.go
 
-# Set the default shell for all RUN commands
-SHELL ["/bin/bash", "-c", "set -o pipefail && $0 \"$@\""]
-
 RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confirm your identity through U2F]' /etc/pam.d/sudo || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=[sudo\\\] Confirm your identity through U2F]' /etc/pam.d/sudo" && \
     cp /usr/lib/pam.d/polkit-1 /etc/pam.d && \
     bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=Confirm your identity through U2F]' /etc/pam.d/polkit-1 || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=Confirm your identity through U2F]' /etc/pam.d/polkit-1" && \
@@ -36,7 +33,14 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
     grep -vE '^#' /usr/share/tygrys20/packages-removed | xargs dnf -y remove && \
     dnf -y autoremove && \
     dnf clean all && \
-    cargo install eza gpg-tui && \ 
+    curl -LO https://github.com/orhun/gpg-tui/releases/download/v0.11.1/gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
+    tar xzf gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
+    mv gpg-tui-0.11.1/gpg-tui /usr/bin && \
+    rm -rf gpg-tui-0.11.1 gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
+    curl -LO https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.zip && \
+    unzip eza_x86_64-unknown-linux-gnu.zip && \
+    mv eza /usr/bin && \
+    rm eza_x86_64-unknown-linux-gnu.zip && \
     go build -o /usr/bin/update-refind /tmp/refind-script.go && \
     /tmp/scripts/config-users && \
     /tmp/scripts/config-authselect && \
