@@ -68,7 +68,7 @@ COPY --chmod=0644 ./systemd/usr__lib__systemd__system__update-refind.service /us
 
 RUN systemctl enable firstboot-setup.service
 RUN systemctl enable bootloader-update.service
-RUN systemctl enable supergfxctl.service
+RUN systemctl enable supergfxd.service
 RUN systemctl mask bootc-fetch-apply-updates.timer
 
 # CLEAN & CHECK
