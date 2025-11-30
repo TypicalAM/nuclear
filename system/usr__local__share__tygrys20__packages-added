@@ -4,6 +4,7 @@
 
 # My packages
 just
+wireshark
 restic
 steam
 systemd-devel
