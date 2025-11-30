@@ -11,7 +11,6 @@ COPY ./system/etc__yum.repos.d/* /etc/yum.repos.d/
 ADD https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-amd64 /usr/bin
 COPY --chmod=0755 ./system/usr__local__bin/* /usr/local/bin/
 COPY --chmod=0644 ./system/etc__skel__tygrys20 /etc/skel/.bashrc.d/tygrys20
-COPY --chmod=0600 ./system/usr__lib__ostree__auth.json /usr/lib/ostree/auth.json
 COPY --chmod=0644 ./systemd/usr__lib__systemd__system__firstboot-setup.service /usr/lib/systemd/system/firstboot-setup.service
 COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.service /usr/lib/systemd/system/bootc-fetch.service
 COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.timer /usr/lib/systemd/system/bootc-fetch.timer
