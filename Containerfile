@@ -44,7 +44,7 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
     go build -o /usr/bin/update-refind /tmp/refind-script.go && \
     /tmp/scripts/config-users && \
     /tmp/scripts/config-authselect && \
-    rm -r /tmp/scripts /var/cache/dnf /tmp/refind-script.go && \
+    rm -r /tmp/scripts /tmp/refind-script.go && \
     systemctl enable firstboot-setup.service && \
     systemctl enable bootloader-update.service && \
     systemctl mask bootc-fetch-apply-updates.timer && \
