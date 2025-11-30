@@ -4,7 +4,7 @@
 # Setup HOST 
 ###############################################
 
-HOST_NAME=kde-bootc
+HOST_NAME=tygrys20
 hostnamectl hostname $HOST_NAME
 
 ###############################################

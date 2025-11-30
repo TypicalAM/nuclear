@@ -1,70 +1,49 @@
-FROM quay.io/fedora-ostree-desktops/kinoite:43
+FROM quay.io/fedora-ostree-desktops/kinoite@sha256:8c88dcd524ad3347ded03929cae0b930d52a1d51d67f61ff3f9c2e9016ba95b1
 
 LABEL org.opencontainers.image.title="Custom fedora Kinoite"
-LABEL org.opencontainers.image.description="Customized image of Fedora Kinoite with Hyprland"
+LABEL org.opencontainers.image.description="Customized image of Fedora Kinoite"
 LABEL org.opencontainers.image.source="https://github.com/TypicalAM/tygrys20"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# SETUP FILESYSTEM
-# RUN rmdir /opt && ln -s -T /var/opt /opt
-RUN mkdir /var/roothome
-
-# PREPARE PACKAGES
-COPY --chmod=0644 ./system/usr__local__share__kde-bootc__packages-removed /usr/local/share/kde-bootc/packages-removed
-COPY --chmod=0644 ./system/usr__local__share__kde-bootc__packages-added /usr/local/share/kde-bootc/packages-added
-RUN jq -r .packages[] /usr/share/rpm-ostree/treefile.json > /usr/local/share/kde-bootc/packages-fedora-bootc
-
-# INSTALL REPOS
-RUN dnf -y install dnf5-plugins
-RUN dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-removed /usr/share/tygrys20/packages-removed
+COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added /usr/share/share/tygrys20/packages-added
 COPY ./system/etc__yum.repos.d/* /etc/yum.repos.d/
-
-# Install rpmfusion
-RUN dnf -y install \
-    https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-    https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-
-# INSTALL PACKAGES
-RUN grep -vE '^#' /usr/local/share/kde-bootc/packages-added | xargs dnf -y install --allowerasing && \
-		grep -vE '^#' /usr/local/share/kde-bootc/packages-removed | xargs dnf -y remove && \
-		dnf -y autoremove && \
-		dnf clean all && \
-		rm -rf /var/cache/dnf
-
-# CONFIGURATION
+ADD https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-amd64 /usr/bin
 COPY --chmod=0755 ./system/usr__local__bin/* /usr/local/bin/
-COPY --chmod=0644 ./system/etc__skel__kde-bootc /etc/skel/.bashrc.d/kde-bootc
+COPY --chmod=0644 ./system/etc__skel__tygrys20 /etc/skel/.bashrc.d/tygrys20
 COPY --chmod=0600 ./system/usr__lib__ostree__auth.json /usr/lib/ostree/auth.json
-
-# Custom non-rpm binaries
-ADD https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-amd64 /usr/local/bin
-RUN chmod +x /usr/local/bin
-RUN cargo install eza gpg-tui
+COPY --chmod=0644 ./systemd/usr__lib__systemd__system__firstboot-setup.service /usr/lib/systemd/system/firstboot-setup.service
+COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.service /usr/lib/systemd/system/bootc-fetch.service
+COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.timer /usr/lib/systemd/system/bootc-fetch.timer
+COPY --chmod=0644 ./systemd/usr__lib__systemd__system__update-refind.service /usr/lib/systemd/system/update-refind.service
 
 # Enable sudo through YubiKey
 RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confirm your identity through U2F]' /etc/pam.d/sudo || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=[sudo\\\] Confirm your identity through U2F]' /etc/pam.d/sudo" && \
 	  cp /usr/lib/pam.d/polkit-1 /etc/pam.d && \
     bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=Confirm your identity through U2F]' /etc/pam.d/polkit-1 || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=Confirm your identity through U2F]' /etc/pam.d/polkit-1"
 
-# Enable Supergfxctl
-RUN bash -c "git clone https://gitlab.com/asus-linux/supergfxctl /tmp/supergfxctl && cd /tmp/supergfxctl && make && make install"
+RUN rm -rf /opt && ln -s -T /var/opt /opt && \
+    mkdir /var/roothome && \
+    dnf -y upgrade \
+    dnf -y install \
+	https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+	https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm && \
+    grep -vE '^#' /usr/local/share/tygrys20/packages-added | xargs dnf -y install --allowerasing && \
+    grep -vE '^#' /usr/local/share/tygrys20/packages-removed | xargs dnf -y remove && \
+    dnf -y autoremove && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
-# Build
 COPY ./refind-script.go /tmp/refind-script.go
-RUN go build -o /usr/bin/update-refind /tmp/refind-script.go
+RUN cargo install eza gpg-tui && \ 
+    bash -c "git clone https://gitlab.com/asus-linux/supergfxctl /tmp/supergfxctl && cd /tmp/supergfxctl && make && make install" && \
+    go build -o /usr/bin/update-refind /tmp/refind-script.go && \
+    rm -rf /tmp/refind-script.go /tmp/supergfxctl
 
-# USERS
 COPY --chmod=0644 ./system/usr__lib__credstore__home.create.admin /usr/lib/credstore/home.create.admin
-
 COPY --chmod=0755 ./scripts/* /tmp/scripts/
 RUN /tmp/scripts/config-users
 RUN /tmp/scripts/config-authselect && rm -r /tmp/scripts
-
-# SYSTEMD
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__firstboot-setup.service /usr/lib/systemd/system/firstboot-setup.service
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.service /usr/lib/systemd/system/bootc-fetch.service
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.timer /usr/lib/systemd/system/bootc-fetch.timer
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__update-refind.service /usr/lib/systemd/system/update-refind.service
 
 RUN systemctl enable firstboot-setup.service
 RUN systemctl enable bootloader-update.service
