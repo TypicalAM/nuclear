@@ -2,10 +2,11 @@
 
 - [-] Secure boot (???)
 - [-] uki
+- [ ] h264 - vlc & firefox
 - [x] U2F with polkit
 - [x] Looking glass client
-- [ ] Enable na supergfxctl
-- [ ] Refind update
+- [x] Enable na supergfxctl
+- [x] Refind update
 - [ ] Automatic after snapper
 - [ ] Nvidia specialization image with VFIO configs readyy
 - [ ] Testing on sencond machine
