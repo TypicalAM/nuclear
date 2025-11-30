@@ -48,8 +48,6 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
 
 # Enable Supergfxctl
 RUN bash -c "git clone https://gitlab.com/asus-linux/supergfxctl /tmp/supergfxctl && cd /tmp/supergfxctl && make && make install"
-RUN curl -L https://github.com/LizardByte/Sunshine/releases/download/v2025.924.154138/Sunshine-2025.924.154138-1.fc42.x86_64.rpm -o /tmp/sunshine.rpm && \
-    rpm -i /tmp/sunshine.rpm
 
 # Build
 COPY ./refind-script.go /tmp/refind-script.go
