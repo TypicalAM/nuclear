@@ -7,7 +7,6 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-removed /usr/share/tygrys20/packages-removed
 COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added /usr/share/tygrys20/packages-added
-COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added-nvidia /usr/share/tygrys20/packages-added-nvidia
 COPY ./system/etc__yum.repos.d/* /etc/yum.repos.d/
 ADD https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-amd64 /usr/bin
 COPY --chmod=0755 ./system/usr__local__bin/* /usr/local/bin/
@@ -55,10 +54,23 @@ FROM base AS nvidia
 
 COPY --chmod=0644 ./system/etc__supergfxd.conf /etc/supergfxd.conf
 COPY --chmod=0644 ./system/etc__tmpfiles.d__10-looking-glass.conf /etc/tmpfiles.d/10-looking-glass.conf
+COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added-nvidia /usr/share/tygrys20/packages-added-nvidia
 
-RUN grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing && \
-    dnf -y autoremove && \
-    dnf clean all && \
-    systemctl enable supergfxd.service && \
-    find /var/log -type f ! -empty -delete && \
-    bootc container lint
+RUN <<EOF
+set -euox pipefail
+
+kver=$(cd /usr/lib/modules && echo *)
+grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing
+dnf -y autoremove
+dnf clean all
+systemctl enable supergfxd.service
+
+rm -rf /var/run*
+/scripts/kmod-build
+
+find /var/log -type f ! -empty -delete
+bootc container lint
+EOF
+
+# dnf swap -y mesa-va-drivers mesa-va-drivers-freeworld && \
+# dnf swap -y mesa-vdpau-drivers mesa-vdpau-drivers-freeworld && \
