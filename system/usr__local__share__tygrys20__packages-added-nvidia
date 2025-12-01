@@ -2,8 +2,8 @@
 # List of packages to install for nvidia usage
 ####################################################
 looking-glass-client
-akmod-nvidia
+#akmod-nvidia
 supergfxd
-xorg-x11-drv-nvidia-cuda
-nvidia-container-toolkit
-akmods
+#xorg-x11-drv-nvidia-cuda
+#nvidia-container-toolkit
+#akmods

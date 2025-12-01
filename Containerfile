@@ -69,23 +69,28 @@ COPY --from=nvidia-builder /usr/src/nvidia-580.105.08/ /usr/src/nvidia-580.105.0
 COPY --from=nvidia-builder /var/lib/dkms/ /var/lib/dkms/
 
 COPY scripts/install-kmod-nvidia-open-dkms.sh /
-RUN /install-kmod-nvidia-open-dkms.sh && rm -f /install-kmod-nvidia-open-dkms.sh
+RUN /install-kmod-nvidia-open-dkms.sh && \
+    rm -f /install-kmod-nvidia-open-dkms.sh && \
+    grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing && \
+    systemctl enable supergfxd.service && \
+    find /var/log -type f ! -empty -delete && \
+    bootc container lint
 
 # We install the NVIDIA toolkit
-COPY scripts/install-nvidia-toolkit.sh /
-RUN /install-nvidia-toolkit.sh && rm -f /install-nvidia-toolkit.sh
+# COPY scripts/install-nvidia-toolkit.sh /
+# RUN /install-nvidia-toolkit.sh && rm -f /install-nvidia-toolkit.sh
 
 # RUN <<EOF
 # set -euox pipefail
 #
 # kver=$(cd /usr/lib/modules && echo *)
-# grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing
+# 
 # echo test
 # exit 1
 #
 # dnf -y autoremove
 # dnf clean all
-# systemctl enable supergfxd.service
+# 
 #
 # rm -rf /var/run*
 # /scripts/kmod-build
