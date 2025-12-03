@@ -5,19 +5,9 @@ LABEL org.opencontainers.image.description="Customized image of Fedora Kinoite"
 LABEL org.opencontainers.image.source="https://github.com/TypicalAM/tygrys20"
 LABEL org.opencontainers.image.licenses="MIT"
 
-COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-removed /usr/share/tygrys20/packages-removed
-COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added /usr/share/tygrys20/packages-added
-COPY ./system/etc__yum.repos.d/* /etc/yum.repos.d/
-ADD https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-amd64 /usr/bin
-COPY --chmod=0755 ./system/usr__local__bin/* /usr/local/bin/
-COPY --chmod=0644 ./system/etc__skel__tygrys20 /etc/skel/.bashrc.d/tygrys20
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__firstboot-setup.service /usr/lib/systemd/system/firstboot-setup.service
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.service /usr/lib/systemd/system/bootc-fetch.service
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__bootc-fetch.timer /usr/lib/systemd/system/bootc-fetch.timer
-COPY --chmod=0644 ./systemd/usr__lib__systemd__system__update-refind.service /usr/lib/systemd/system/update-refind.service
-COPY --chmod=0644 ./system/usr__lib__credstore__home.create.admin /usr/lib/credstore/home.create.admin
-COPY --chmod=0755 ./scripts/* /tmp/scripts/
-COPY --chmod=0755 ./refind-script.go /tmp/refind-script.go
+COPY --chmod=0644 ./system/etc /etc
+COPY --chmod=0644 ./system/usr /usr
+COPY --chmod=0755 ./scripts /tmp/scripts/
 
 RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confirm your identity through U2F]' /etc/pam.d/sudo || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=[sudo\\\] Confirm your identity through U2F]' /etc/pam.d/sudo" && \
     cp /usr/lib/pam.d/polkit-1 /etc/pam.d && \
@@ -40,10 +30,10 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
     unzip eza_x86_64-unknown-linux-gnu.zip && \
     mv eza /usr/bin && \
     rm eza_x86_64-unknown-linux-gnu.zip && \
-    go build -o /usr/bin/update-refind /tmp/refind-script.go && \
+    go build -o /usr/bin/update-refind /tmp/scripts/refind-updater.go && \
     /tmp/scripts/config-users && \
     /tmp/scripts/config-authselect && \
-    rm -r /tmp/scripts /tmp/refind-script.go && \
+    rm -r /tmp/scripts && \
     systemctl enable firstboot-setup.service && \
     systemctl enable bootloader-update.service && \
     systemctl mask bootc-fetch-apply-updates.timer && \
@@ -52,12 +42,14 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
 
 FROM base AS nvidia
 
-COPY --chmod=0644 ./system/etc__supergfxd.conf /etc/supergfxd.conf
-COPY --chmod=0644 ./system/etc__tmpfiles.d__10-looking-glass.conf /etc/tmpfiles.d/10-looking-glass.conf
-COPY --chmod=0644 ./system/usr__local__share__tygrys20__packages-added-nvidia /usr/share/tygrys20/packages-added-nvidia
+COPY --chmod=0644 ./nvidia/etc /etc
+COPY --chmod=0644 ./nvidia/usr /usr
 
 RUN kver="$(cd /usr/lib/modules && echo *)" && \
     grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing && \
+    dnf -y autoremove && \
+    dnf clean all && \
+    /tmp/build-kmod && \
     systemctl enable supergfxd.service && \
     find /var/log -type f ! -empty -delete && \
     bootc container lint
