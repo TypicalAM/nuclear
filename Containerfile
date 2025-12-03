@@ -25,19 +25,17 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
     curl -LO https://github.com/orhun/gpg-tui/releases/download/v0.11.1/gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
     tar xzf gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
     mv gpg-tui-0.11.1/gpg-tui /usr/bin && \
-    rm -rf gpg-tui-0.11.1 gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
     curl -LO https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.zip && \
     unzip eza_x86_64-unknown-linux-gnu.zip && \
     mv eza /usr/bin && \
-    rm eza_x86_64-unknown-linux-gnu.zip && \
     go build -o /usr/bin/update-refind /tmp/scripts/refind-updater.go && \
     /tmp/scripts/config-users && \
     /tmp/scripts/config-authselect && \
-    rm -r /tmp/scripts && \
     systemctl enable firstboot-setup.service && \
     systemctl enable bootloader-update.service && \
     systemctl mask bootc-fetch-apply-updates.timer && \
     find /var/log -type f ! -empty -delete && \
+    rm -rf /var/cache /var/log /tmp/scripts eza_x86_64-unknown-linux-gnu.zip gpg-tui-0.11.1 gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
     bootc container lint
 
 FROM base AS nvidia
