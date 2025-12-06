@@ -5,7 +5,7 @@ looking-glass-client
 akmod-nvidia
 nvidia-container-toolkit
 nvidia-vaapi-driver
-xorg-x11-drv-nvidia
+xorg-x11-drv-nvidia-cuda
 supergfxd
 akmod-nvidia
 lm_sensors
