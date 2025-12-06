@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.source="https://github.com/TypicalAM/tygrys20"
 LABEL org.opencontainers.image.licenses="MIT"
 
 COPY --chmod=0644 ./system/etc /etc
-COPY --chmod=0644 ./system/usr /usr
-COPY --chmod=0755 ./scripts /tmp/scripts
+COPY --chmod=0755 ./scripts /tmp/scripts/
+COPY ./system/usr /usr
 
 RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confirm your identity through U2F]' /etc/pam.d/sudo || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=[sudo\\\] Confirm your identity through U2F]' /etc/pam.d/sudo" && \
     cp /usr/lib/pam.d/polkit-1 /etc/pam.d && \
