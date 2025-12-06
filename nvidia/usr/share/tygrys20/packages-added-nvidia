@@ -7,3 +7,9 @@ nvidia-container-toolkit
 nvidia-vaapi-driver
 xorg-x11-drv-nvidia
 supergfxd
+akmod-nvidia
+lm_sensors
+libva-utils
+vdpauinfo
+v4l2loopback
+v4l-utils

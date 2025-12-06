@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 COPY --chmod=0644 ./system/etc /etc
 COPY --chmod=0644 ./system/usr /usr
-COPY --chmod=0755 ./scripts /tmp/scripts/
+COPY --chmod=0755 ./scripts /tmp/scripts
 
 RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confirm your identity through U2F]' /etc/pam.d/sudo || sed -i '1a auth sufficient pam_u2f.so cue [cue_prompt=[sudo\\\] Confirm your identity through U2F]' /etc/pam.d/sudo" && \
     cp /usr/lib/pam.d/polkit-1 /etc/pam.d && \
@@ -18,6 +18,7 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
     dnf -y install \
 	"https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
 	"https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" && \
+    dnf group install -y multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin && \
     grep -vE '^#' /usr/share/tygrys20/packages-added | xargs dnf -y install --allowerasing && \
     grep -vE '^#' /usr/share/tygrys20/packages-removed | xargs dnf -y remove && \
     dnf -y autoremove && \
@@ -41,16 +42,12 @@ RUN bash -c "grep -Fxq 'auth sufficient pam_u2f.so cue [cue_prompt=[sudo\] Confi
 FROM base AS nvidia
 
 COPY --chmod=0644 ./nvidia/etc /etc
-COPY --chmod=0644 ./nvidia/usr /usr
-COPY --chmod=0644 ./scripts/build-kmod /tmp/scripts/build-kmod
+COPY --chmod=0755 ./nvidia/scripts /tmp/scripts
+COPY ./nvidia/usr /usr
 
-RUN kver="$(cd /usr/lib/modules && echo *)" && \
-    grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --allowerasing && \
-    dnf -y autoremove && \
-    dnf clean all && \
-    chmod +x /tmp/scripts/build-kmod && \
+RUN kver=$(cd /usr/lib/modules && echo *) && \
+    grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --best --allowerasing && \
     /tmp/scripts/build-kmod && \
-    rm /tmp/scripts/build-kmod && \
+    rm -rf /var/cache /var/log /var/run* /tmp/scripts/build-kmod && \
     systemctl enable supergfxd.service && \
-    find /var/log -type f ! -empty -delete && \
     bootc container lint
