@@ -37,7 +37,18 @@ RUN dnf group install -y kde-desktop virtualization && \
     systemctl enable bootloader-update.service && \
     systemctl mask bootc-fetch-apply-updates.timer && \
     find /var/log -type f ! -empty -delete && \
-    rm -rf /var/cache /var/log /tmp/scripts eza_x86_64-unknown-linux-gnu.zip gpg-tui-0.11.1 gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz && \
+    rm -rf \
+	/var/cache \
+	/var/log \
+	/tmp/scripts \
+	eza_x86_64-unknown-linux-gnu.zip \
+	gpg-tui-0.11.1 \
+	gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz \
+	/var/roothome/.config \
+	/var/roothome/.cache \
+	/var/lib/systemd \
+	/var/lib/dnf \
+	&& \
     bootc container lint
 
 FROM base AS nvidia
