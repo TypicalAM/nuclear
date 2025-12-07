@@ -19,10 +19,6 @@ RUN rm -rf /opt && \
     /tmp/scripts/config-authselect && \
     /tmp/scripts/config-yubikey && \
     /tmp/scripts/config-systemd && \
-    systemctl enable firstboot-setup.service && \
-    systemctl enable refind-update.service && \
-    systemctl enable bootloader-update.service && \
-    systemctl mask bootc-fetch-apply-updates.timer && \
     rm -rf /var/cache /var/log /tmp/scripts /var/roothome/.config /var/roothome/.cache /var/lib/systemd && \
     bootc container lint
 
