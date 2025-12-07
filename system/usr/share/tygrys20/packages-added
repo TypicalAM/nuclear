@@ -2,6 +2,10 @@
 # List of packages to install on top of base image
 ####################################################
 
+iwlegacy-firmware
+iwlwifi-dvm-firmware
+iwlwifi-mld-firmware
+iwlwifi-mvm-firmware
 just
 wireshark
 btrfs-assistant
