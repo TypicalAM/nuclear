@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+dnf upgrade -y
 dnf group install -y kde-desktop virtualization multimedia
 dnf -y install \
 	"https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
