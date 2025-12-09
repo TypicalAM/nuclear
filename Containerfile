@@ -14,6 +14,7 @@ COPY ./system/usr/lib/systemd /usr/lib/systemd
 RUN rm -rf /opt && \
     ln -s -T /var/opt /opt && \
     mkdir /var/roothome && \
+    chmod +x /usr/bin/firstboot-setup && \
     /tmp/scripts/install-rpm-packages && \
     /tmp/scripts/install-extra-packages && \
     /tmp/scripts/config-users && \
