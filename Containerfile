@@ -1,4 +1,6 @@
-FROM quay.io/fedora/fedora-bootc:42@sha256:ea981f7cf6c50fe73e2ab0ee0fd5e7e62699af72d7d2b6104a2f4f1abcda39bf AS base
+# Using own mirror of quay.io/fedora/fedora-bootc:42@sha256:4f8c23d280f909bde2967564d50adb675edea28b606e82b9a51f0d49c6446359
+# Because people at quay make images obsolete frequently and I want to get the cache benefits. Maybe will move to pungi soon.
+FROM docker.io/typicalam/fedora-bootc:42 AS base
 
 LABEL org.opencontainers.image.title="Custom fedora bootc"
 LABEL org.opencontainers.image.description="Customized image of Fedora Bootc"
