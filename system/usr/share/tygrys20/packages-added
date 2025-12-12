@@ -65,6 +65,7 @@ rsync
 obs-studio
 obs-studio-plugin-x264
 plymouth
+plymouth-system-theme
 
 # Hyprland
 cliphist
