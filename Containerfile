@@ -23,6 +23,7 @@ RUN rm -rf /opt && \
     /tmp/scripts/config-yubikey && \
     /tmp/scripts/config-systemd && \
     /tmp/scripts/config-release-info && \
+    /tmp/scripts/build-initramfs && \
     rm -rf /var/cache /var/log /tmp/scripts /var/roothome/.config /var/roothome/.cache /var/lib/systemd && \
     bootc container lint
 
@@ -34,13 +35,15 @@ FROM base AS nvidia
 
 COPY --chmod=0644 ./nvidia/etc /etc
 COPY --chmod=0755 ./nvidia/scripts /tmp/scripts
+COPY --chmod=0755 ./system/scripts/build-initramfs /tmp/scripts/build-initramfs
 COPY ./nvidia/usr/share/tygrys20 /usr/share/tygrys20
 COPY ./nvidia/usr/lib/systemd /usr/lib/systemd
 
 RUN kver=$(cd /usr/lib/modules && echo *) && \
     grep -vE '^#' /usr/share/tygrys20/packages-added-nvidia | xargs dnf -y install --best --allowerasing && \
     /tmp/scripts/build-kmod && \
-    rm -rf /var/cache /var/log /var/run* /tmp/scripts/build-kmod && \
+    /tmp/scripts/build-initramfs && \
+    rm -rf /var/cache /var/log /var/run* /tmp/scripts && \
     systemctl enable supergfxd.service && \
     bootc container lint
 
