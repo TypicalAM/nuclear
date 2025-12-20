@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -55,8 +56,54 @@ func generateEntryText(entry BootEntry) string {
 	b.WriteString(makeKey(2, "options", KernelConfigValue(iGPUOpts)))
 	b.WriteString("\t}\n")
 
+	b.WriteString("}\n\n")
+
+	ukiFile := filepath.Dir("/fedora-atomic"+string(linux)) + "/UKI.efi"
+	b.WriteString(fmt.Sprintf("menuentry \"%s\" (UKI) {\n", title))
+	b.WriteString(makeKey(1, "graphics", "on"))
+	b.WriteString(makeKey(1, "icon", "/EFI/refind/themes/rEFInd-glassy/icons/os_chakra.png"))
+	b.WriteString(makeKey(1, "loader", KernelConfigValue(ukiFile)))
 	b.WriteString("}\n")
+
 	return b.String()
+}
+
+const ukiTemplate = `[UKI]
+Linux=/boot/efi/fedora-atomic%[1]s
+Initrd=/boot/efi/fedora-atomic%[2]s
+Uname=%[3]s
+Cmdline=%[4]s
+OSRelease=%[5]s`
+
+func generateUKI(entry BootEntry, dst string) error {
+	split := strings.Split(string(entry["linux"]), "/")
+	uname := split[len(split)-1]
+	cfg := fmt.Sprintf(ukiTemplate, entry["linux"], entry["initrd"], uname, entry["options"], "43") // TODO: Not hardcode this
+
+	tmp, err := os.CreateTemp("", "uki-*.conf")
+	if err != nil {
+		return fmt.Errorf("create config tmp: %w", err)
+	}
+	cfgPath := tmp.Name()
+	defer os.Remove(cfgPath)
+
+	if _, err := tmp.WriteString(cfg); err != nil {
+		tmp.Close()
+		return fmt.Errorf("write config: %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		return fmt.Errorf("close config: %w", err)
+	}
+
+	// Build UKI
+	cmd := exec.Command("ukify", "build", "--config", cfgPath, "--output", dst)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("ukify build: %w", err)
+	}
+
+	return nil
 }
 
 func mustGet(entry BootEntry, key string, file string) KernelConfigValue {
@@ -144,6 +191,13 @@ func main() {
 
 			log.Printf("Copied %s → %s", src, dst)
 		}
+
+		ukiDst := filepath.Join("/boot/efi/fedora-atomic", filepath.Dir(string(linux)), "/UKI.efi")
+		if err := generateUKI(entry, ukiDst); err != nil {
+			log.Fatalf("Failed to generate UKI: %v", err)
+		}
+
+		log.Printf("Generated UKI at %s", ukiDst)
 	}
 
 	// Generate refind config
