@@ -8,178 +8,180 @@ obs-studio-plugin-x264
 nmtui
 plymouth
 plymouth-system-theme
-iwlegacy-firmware
-iwlwifi-dvm-firmware
-iwlwifi-mld-firmware
-iwlwifi-mvm-firmware
-just
-wireshark
-btrfs-assistant
-restic
-systemd-devel
-wezterm
-jq
-gparted
-neovim
-bat
-cargo
-fastfetch
-gh
-glab
-gpgme-devel
-libgpg-error-devel
-pam-u2f
-pamu2fcfg
-pam_yubico
-stow
-go
-lua
-ranger
-zsh
-pamixer
-btop
-kvantum
-rofi-wayland
-ImageMagick
-waybar
-wl-clipboard
-bc
-curl
-pwgen
-distrobox
-duf
-fzf
-gum
-git
-git-crypt
-pass
-containerd
-docker
-docker-buildx
-docker-compose
-moby-engine
-firefox
-NetworkManager-bluetooth
-NetworkManager-ppp
-NetworkManager-wifi
-NetworkManager-wwan
-wpa_supplicant
-rsync
-obs-studio
-cliphist
-grim
-gvfs
-gvfs-mtp
-hypridle
-hyprland
-hyprlock
-hyprpaper
-hyprpolkitagent
-inxi
-network-manager-applet
-nwg-displays
-nwg-look
-pavucontrol
-python3-pip
-python3-pyquery
-qt5ct
-qt6ct
-slurp
-swappy
-SwayNotificationCenter
-swww
-wlogout
-yad
-qemu-system-aarch64
-tailscale
-lshw
-htop
-ncdu
-nmap
-c2esp
-dymo-cups-drivers
-printer-driver-brlaser
-ptouch-driver
-splix
-NetworkManager-config-connectivity-fedora
-akonadi-server
-akonadi-server-mysql
-ark
-audiocd-kio
-bluedevil
-breeze-icon-theme
-colord-kde
-dolphin
-ffmpegthumbs
-filelight
-firewall-config
-flatpak-kcm
-fprintd-pam
-kaccounts-integration-qt6
-kaccounts-providers
-kcharselect
-kde-connect
-kde-gtk-config
-kde-inotify-survey
-kde-partitionmanager
-kde-settings-pulseaudio
-kdebugsettings
-kdegraphics-thumbnailers
-kdenetwork-filesharing
-kdeplasma-addons
-kdialog
-kdnssd
-kf6-baloo-file
-kfind
-khelpcenter
-kinfocenter
-kio-admin
-kio-gdrive
-kjournald
-kmenuedit
-konsole
-krdp
-krfb
-kscreen
-kscreenlocker
-kunifiedpush
-kwalletmanager5
-kwin
-kwrite
-libappindicator-gtk3
-mesa-dri-drivers
-mesa-vulkan-drivers
-pam-kwallet
-phonon-qt6-backend-vlc
-pinentry-qt
-plasma-breeze
-plasma-desktop
-plasma-desktop-doc
-plasma-discover
-plasma-discover-notifier
-plasma-disks
-plasma-drkonqi
-plasma-nm
-plasma-nm-openconnect
-plasma-nm-openvpn
-plasma-nm-vpnc
-plasma-pa
-plasma-print-manager
-plasma-systemmonitor
-plasma-thunderbolt
-plasma-vault
-plasma-welcome
-plasma-workspace
-plasma-workspace-wallpapers
-polkit-kde
-samba-usershares
-sddm
-sddm-breeze
-sddm-kcm
-sddm-wayland-plasma
-signon-kwallet-extension
-spectacle
-systemd-oomd-defaults
-udisks2
-vlc-plugin-gstreamer
-xwaylandvideobridge
+
+# Already in the base image:
+# iwlegacy-firmware
+# iwlwifi-dvm-firmware
+# iwlwifi-mld-firmware
+# iwlwifi-mvm-firmware
+# just
+# wireshark
+# btrfs-assistant
+# restic
+# systemd-devel
+# wezterm
+# jq
+# gparted
+# neovim
+# bat
+# cargo
+# fastfetch
+# gh
+# glab
+# gpgme-devel
+# libgpg-error-devel
+# pam-u2f
+# pamu2fcfg
+# pam_yubico
+# stow
+# go
+# lua
+# ranger
+# zsh
+# pamixer
+# btop
+# kvantum
+# rofi-wayland
+# ImageMagick
+# waybar
+# wl-clipboard
+# bc
+# curl
+# pwgen
+# distrobox
+# duf
+# fzf
+# gum
+# git
+# git-crypt
+# pass
+# containerd
+# docker
+# docker-buildx
+# docker-compose
+# moby-engine
+# firefox
+# NetworkManager-bluetooth
+# NetworkManager-ppp
+# NetworkManager-wifi
+# NetworkManager-wwan
+# wpa_supplicant
+# rsync
+# obs-studio
+# cliphist
+# grim
+# gvfs
+# gvfs-mtp
+# hypridle
+# hyprland
+# hyprlock
+# hyprpaper
+# hyprpolkitagent
+# inxi
+# network-manager-applet
+# nwg-displays
+# nwg-look
+# pavucontrol
+# python3-pip
+# python3-pyquery
+# qt5ct
+# qt6ct
+# slurp
+# swappy
+# SwayNotificationCenter
+# swww
+# wlogout
+# yad
+# qemu-system-aarch64
+# tailscale
+# lshw
+# htop
+# ncdu
+# nmap
+# c2esp
+# dymo-cups-drivers
+# printer-driver-brlaser
+# ptouch-driver
+# splix
+# NetworkManager-config-connectivity-fedora
+# akonadi-server
+# akonadi-server-mysql
+# ark
+# audiocd-kio
+# bluedevil
+# breeze-icon-theme
+# colord-kde
+# dolphin
+# ffmpegthumbs
+# filelight
+# firewall-config
+# flatpak-kcm
+# fprintd-pam
+# kaccounts-integration-qt6
+# kaccounts-providers
+# kcharselect
+# kde-connect
+# kde-gtk-config
+# kde-inotify-survey
+# kde-partitionmanager
+# kde-settings-pulseaudio
+# kdebugsettings
+# kdegraphics-thumbnailers
+# kdenetwork-filesharing
+# kdeplasma-addons
+# kdialog
+# kdnssd
+# kf6-baloo-file
+# kfind
+# khelpcenter
+# kinfocenter
+# kio-admin
+# kio-gdrive
+# kjournald
+# kmenuedit
+# konsole
+# krdp
+# krfb
+# kscreen
+# kscreenlocker
+# kunifiedpush
+# kwalletmanager5
+# kwin
+# kwrite
+# libappindicator-gtk3
+# mesa-dri-drivers
+# mesa-vulkan-drivers
+# pam-kwallet
+# phonon-qt6-backend-vlc
+# pinentry-qt
+# plasma-breeze
+# plasma-desktop
+# plasma-desktop-doc
+# plasma-discover
+# plasma-discover-notifier
+# plasma-disks
+# plasma-drkonqi
+# plasma-nm
+# plasma-nm-openconnect
+# plasma-nm-openvpn
+# plasma-nm-vpnc
+# plasma-pa
+# plasma-print-manager
+# plasma-systemmonitor
+# plasma-thunderbolt
+# plasma-vault
+# plasma-welcome
+# plasma-workspace
+# plasma-workspace-wallpapers
+# polkit-kde
+# samba-usershares
+# sddm
+# sddm-breeze
+# sddm-kcm
+# sddm-wayland-plasma
+# signon-kwallet-extension
+# spectacle
+# systemd-oomd-defaults
+# udisks2
+# vlc-plugin-gstreamer
+# xwaylandvideobridge
