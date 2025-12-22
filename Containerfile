@@ -16,8 +16,10 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=cache,dst=/var/lib/systemd \
-    --mount=type=cache,dst=/root/.cache \
     --mount=type=tmpfs,dst=/tmp \
+    rm -rf /opt && \
+    ln -s -T /var/opt /opt && \
+    mkdir /var/roothome && \
     /ctx/install-rpm-packages && \
     /ctx/install-extra-packages && \
     /ctx/config-users && \
@@ -26,7 +28,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/config-systemd && \
     /ctx/config-release-info && \
     /ctx/build-initramfs && \
-    rm -rf /var/lib /var/run /var/lib/dnf
+    rm -rf /var/lib /var/run /var/lib/dnf /var/roothome/.cache
 
 RUN bootc container lint
 
