@@ -33,14 +33,14 @@ var generateEntryT = template.Must(template.New("entry").Funcs(template.FuncMap{
 	submenuentry "Boot with VFIO" {
 		loader /fedora-atomic{{.Linux}}
 		initrd /fedora-atomic{{.Initrd}}
-		options {{.Options}} supergfxd.mode=Vfio
+		options "{{.Options}} supergfxd.mode=Vfio"
 		graphics on
 	}
 
 	submenuentry "Boot with only integrated GPU" {
 		loader /fedora-atomic{{.Linux}}
 		initrd /fedora-atomic{{.Initrd}}
-		options {{.Options}} supergfxd.mode=Integrated
+		options "{{.Options}} supergfxd.mode=Integrated"
 		graphics on
 	}
 }`))
