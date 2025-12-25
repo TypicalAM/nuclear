@@ -184,3 +184,5 @@ udisks2
 vlc-plugin-gstreamer
 xwaylandvideobridge
 systemd-ukify
+glibc-langpack-en
+glibc-langpack-pl
