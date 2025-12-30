@@ -69,7 +69,7 @@ const ukiTemplate = `[UKI]
 Linux=/boot/efi/fedora-atomic%[1]s
 Initrd=/boot/efi/fedora-atomic%[2]s
 Uname=%[3]s
-Cmdline=%[4]s
+Cmdline=%[4]s supergfxd.mode=Hybrid
 OSRelease=%[5]s`
 
 func generateUKI(entry BootEntry, dst string) error {
