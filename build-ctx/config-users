@@ -11,8 +11,8 @@ USER_NAME=admin
 # SYSTEMD-HOMED USERS
 # systemd-homed users are created by firstboot-setup during the initial boot, as they need systemd to be running
 # Setup subuid & subgid for the systemd-homed user
-echo "$USER_NAME:1000001:65536">/etc/subuid
-echo "$USER_NAME:1000001:65536">/etc/subgid
+echo "$USER_NAME:1000001:65536" >/etc/subuid
+echo "$USER_NAME:1000001:65536" >/etc/subgid
 
 # Setup initial password for root
 echo "Temp#SsaP" | passwd root -s

@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ###############################################
-# Setup HOST 
+# Setup HOST
 ###############################################
 
 HOST_NAME=tygrys20
 hostnamectl hostname $HOST_NAME
 
 ###############################################
-# Setup USERS 
+# Setup USERS
 ###############################################
 
 homectl firstboot
