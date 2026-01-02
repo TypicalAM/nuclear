@@ -2,7 +2,7 @@
 FROM scratch AS ctx
 COPY build-ctx /
 
-# Using own mirror of fedora-bootc from https://gitlab.com/TypicalAM/fedora-bootc to allow for better package caching
+# Using own mirror of fedora-bootc from https://github.com/TypicalAM/fedora-bootc to allow for better package caching
 FROM docker.io/typicalam/fedora-bootc:43 AS base
 
 LABEL org.opencontainers.image.title="Custom fedora bootc"
