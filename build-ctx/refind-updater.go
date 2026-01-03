@@ -8,16 +8,15 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"text/template"
 )
 
 const REFIND_CONFIG_PATH = "/boot/efi/EFI/refind/fedora-atomic.conf"
 
 type (
-	BootEntries       map[string]BootEntry
-	BootEntry         map[KernelConfigKey]KernelConfigValue
-	KernelConfigKey   string
-	KernelConfigValue string
+	BootEntries map[string]BootEntry
+	BootEntry   map[string]string
 )
 
 var generateEntryT = template.Must(template.New("entry").Funcs(template.FuncMap{
@@ -27,36 +26,26 @@ var generateEntryT = template.Must(template.New("entry").Funcs(template.FuncMap{
 	`menuentry "{{.Title}}" {
 	title "{{.Title}}"
 	icon /EFI/refind/themes/rEFInd-glassy/icons/os_core.png
-	loader {{.UkiPath}}
+	loader {{.UkiDir}}/UKI-Hybrid.efi
 	graphics on
 
 	submenuentry "Boot with VFIO" {
-		loader /fedora-atomic{{.Linux}}
-		initrd /fedora-atomic{{.Initrd}}
-		options "{{.Options}} supergfxd.mode=Vfio"
+		loader {{.UkiDir}}/UKI-Vfio.efi
 		graphics on
 	}
 
 	submenuentry "Boot with only integrated GPU" {
-		loader /fedora-atomic{{.Linux}}
-		initrd /fedora-atomic{{.Initrd}}
-		options "{{.Options}} supergfxd.mode=Integrated"
+		loader {{.UkiDir}}/UKI-Integrated.efi
 		graphics on
 	}
 }`))
 
 // GenerateEntry renders the entry from a data map.
 func GenerateEntry(entry BootEntry) (string, error) {
-	title := string(entry["title"])
-	linux := string(entry["linux"])
-	initrd := string(entry["initrd"])
-	opts := string(entry["options"])
 	data := map[string]string{
-		"Title":   title,
-		"Linux":   linux,
-		"Initrd":  initrd,
-		"Options": opts,
-		"UkiPath": filepath.Dir("/fedora-atomic"+linux) + "/UKI.efi",
+		"Title":   entry["title"],
+		"Options": entry["options"],
+		"UkiDir":  filepath.Join("/fedora-atomic", filepath.Dir(entry["linux"])[1:], entry["version"]),
 	}
 	var buf bytes.Buffer
 	if err := generateEntryT.Execute(&buf, data); err != nil {
@@ -65,46 +54,85 @@ func GenerateEntry(entry BootEntry) (string, error) {
 	return buf.String(), nil
 }
 
-const ukiTemplate = `[UKI]
-Linux=/boot/efi/fedora-atomic%[1]s
-Initrd=/boot/efi/fedora-atomic%[2]s
-Uname=%[3]s
-Cmdline=%[4]s supergfxd.mode=Hybrid
-OSRelease=%[5]s`
+var ukiTemplateT = template.Must(template.New("uki").Funcs(template.FuncMap{
+	"repeat":   strings.Repeat,
+	"hasSpace": func(s string) bool { return strings.ContainsRune(s, ' ') },
+}).Parse(
+	`[UKI]
+Linux=/boot{{.Linux}}
+Initrd=/boot/{{.Initrd}}
+Uname={{.Uname}}
+Cmdline={{.Options}} supergfxd.mode={{.GraphicsMode}}
+OSRelease={{.OSRelease}}
+Splash=/ctx/artistic-landscape.bmp
+`))
 
-func generateUKI(entry BootEntry, dst string) error {
-	split := strings.Split(string(entry["linux"]), "/")
+func generateUKI(entry BootEntry, dstDirectory string) error {
+	split := strings.Split(entry["linux"], "/")
 	uname := split[len(split)-1]
-	cfg := fmt.Sprintf(ukiTemplate, entry["linux"], entry["initrd"], uname, entry["options"], "43") // TODO: Not hardcode this
 
-	tmp, err := os.CreateTemp("", "uki-*.conf")
-	if err != nil {
-		return fmt.Errorf("create config tmp: %w", err)
-	}
-	cfgPath := tmp.Name()
-	defer os.Remove(cfgPath)
+	graphicsModes := []string{"Hybrid", "Vfio", "Integrated"}
 
-	if _, err := tmp.WriteString(cfg); err != nil {
-		tmp.Close()
-		return fmt.Errorf("write config: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close config: %w", err)
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(graphicsModes))
+
+	for _, mode := range graphicsModes {
+		wg.Go(func() {
+
+			data := map[string]string{
+				"Linux":        entry["linux"],
+				"Initrd":       entry["initrd"],
+				"Uname":        uname,
+				"Options":      entry["options"],
+				"GraphicsMode": mode,
+				"OSRelease":    "43", // TODO: not hard-coded
+			}
+
+			var buf bytes.Buffer
+			if err := ukiTemplateT.Execute(&buf, data); err != nil {
+				errCh <- fmt.Errorf("template exec (%s): %w", mode, err)
+				return
+			}
+
+			cfg, err := os.CreateTemp("", "uki-*.conf")
+			if err != nil {
+				errCh <- fmt.Errorf("create temp config (%s): %w", mode, err)
+				return
+			}
+			// defer os.Remove(cfg.Name())
+
+			if _, err := cfg.Write(buf.Bytes()); err != nil {
+				cfg.Close()
+				errCh <- fmt.Errorf("write config (%s): %w", mode, err)
+				return
+			}
+			cfg.Close()
+
+			dst := filepath.Join(dstDirectory, fmt.Sprintf("UKI-%s.efi", mode))
+			cmd := exec.Command("ukify", "build", "--config", cfg.Name(), "--output", dst)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				errCh <- fmt.Errorf("ukify build (%s): %w", mode, err)
+				return
+			}
+		})
 	}
 
-	// Build UKI
-	cmd := exec.Command("ukify", "build", "--config", cfgPath, "--output", dst)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("ukify build: %w", err)
-	}
+	wg.Wait()
+	close(errCh)
 
+	// return the first error we hit (if any)
+	for err := range errCh {
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func mustGet(entry BootEntry, key string, file string) KernelConfigValue {
-	val, ok := entry[KernelConfigKey(key)]
+func mustGet(entry BootEntry, key string, file string) string {
+	val, ok := entry[key]
 	if !ok {
 		log.Fatalf("Missing key %q in entry %q", key, file)
 	}
@@ -156,46 +184,44 @@ func main() {
 			if !ok {
 				log.Fatalf("Malformed line in %q: %q", filename, line)
 			}
-			newEntry[KernelConfigKey(key)] = KernelConfigValue(value)
+			newEntry[key] = value
 		}
 
 		bootEntries[dirEntry.Name()] = newEntry
 	}
 
-	// Copy kernel + initrd to EFI
-	for name, entry := range bootEntries {
-		log.Printf("Processing entry: %s", name)
-
-		linux := mustGet(entry, "linux", name)
-		initrd := mustGet(entry, "initrd", name)
-
-		for _, item := range []KernelConfigValue{linux, initrd} {
-			src := filepath.Join("/boot", string(item)[1:])
-			dst := filepath.Join("/boot/efi/fedora-atomic", string(item)[1:])
-
-			data, err := os.ReadFile(src)
-			if err != nil {
-				log.Fatalf("Failed reading %q: %v", src, err)
-			}
-
-			if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
-				log.Fatalf("Failed creating directory for %q: %v", dst, err)
-			}
-
-			if err := os.WriteFile(dst, data, 0600); err != nil {
-				log.Fatalf("Failed writing %q: %v", dst, err)
-			}
-
-			log.Printf("Copied %s → %s", src, dst)
-		}
-
-		ukiDst := filepath.Join("/boot/efi/fedora-atomic", filepath.Dir(string(linux)), "/UKI.efi")
-		if err := generateUKI(entry, ukiDst); err != nil {
-			log.Fatalf("Failed to generate UKI: %v", err)
-		}
-
-		log.Printf("Generated UKI at %s", ukiDst)
+	type job struct {
+		name  string
+		entry BootEntry
 	}
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(bootEntries))
+
+	for name, entry := range bootEntries {
+		wg.Add(1)
+		go func(j job) {
+			defer wg.Done()
+
+			log.Printf("Processing entry: %s", j.name)
+
+			linux := mustGet(j.entry, "linux", j.name)
+			dst := filepath.Join("/boot/efi/fedora-atomic", filepath.Dir(linux)[1:], j.entry["version"])
+			if err := os.MkdirAll(dst, 0755); err != nil {
+				errCh <- fmt.Errorf("mkdir %q: %w", dst, err)
+				return
+			}
+
+			if err := generateUKI(j.entry, dst); err != nil {
+				errCh <- fmt.Errorf("generateUKI %q: %w", j.name, err)
+				return
+			}
+			log.Printf("Generated UKIs at %s", dst)
+		}(job{name: name, entry: entry})
+	}
+
+	wg.Wait()
+	close(errCh)
 
 	// Generate refind config
 	var buf bytes.Buffer
