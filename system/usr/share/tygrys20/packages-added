@@ -8,6 +8,7 @@ obs-studio-plugin-x264
 nmtui
 plymouth
 plymouth-system-theme
+plymouth-plugin-script
 iwlegacy-firmware
 iwlwifi-dvm-firmware
 iwlwifi-mld-firmware
