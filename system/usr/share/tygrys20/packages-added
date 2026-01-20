@@ -2,6 +2,7 @@
 # List of packages to install on top of the base image
 ####################################################
 
+sbctl
 steam
 ffmpeg
 obs-studio-plugin-x264
