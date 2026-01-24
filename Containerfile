@@ -26,6 +26,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/config-authselect && \
     /ctx/config-yubikey && \
     /ctx/config-systemd && \
+    /ctx/config-themes && \
     /ctx/config-release-info && \
     /ctx/build-initramfs && \
     rm -rf /var/run /var/lib/dnf /var/roothome/.cache

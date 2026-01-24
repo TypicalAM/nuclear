@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eux pipefail
+
+git clone https://github.com/ashbork/kde /tmp/kde
+mv /tmp/kde/Rose\ Pine\ Dawn/colorschemes/rose-pine-dawn.colors /usr/share/color-schemes
+mv /tmp/kde/rose-moon /usr/share/plasma/desktoptheme/rose-moon
+
+git clone https://github.com/vinceliuice/Tela-circle-icon-theme /tmp/Tela-circle-icon-theme
+cd /tmp/Tela-circle-icon-theme
+./install.sh -d /usr/share/icons dracula
+rm -rf /tmp/kde /tmp/Tela-circle-icon-theme
