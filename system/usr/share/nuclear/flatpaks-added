@@ -2,6 +2,7 @@
 # List of flatpaks to install if the user wishes to, these are not in the image
 #############################################################################
 
+im.riot.Riot
 org.signal.Signal
 org.remmina.Remmina
 md.obsidian.Obsidian
