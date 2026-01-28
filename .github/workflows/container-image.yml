@@ -9,11 +9,12 @@ on:
     paths-ignore:
       - '**/*.md'
       - '*.md'
-      - 'docs/**'
-      - 'compose/**'
-      - '.*'
   schedule:
     - cron: '30 13 * * FRI'    # Triggers Fri at 13:30
+
+env:
+  IMAGE_REGISTRY: docker.piaseczny.dev
+  IMAGE_NAME: machine/nuclear
 
 jobs:
   io-image:
@@ -23,7 +24,7 @@ jobs:
       uses: ublue-os/remove-unwanted-software@v8
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Podman login
       env:
@@ -35,13 +36,43 @@ jobs:
           --password-stdin
 
     - name: Build base image
-      run: podman build -t docker.piaseczny.dev/machine/nuclear:latest --target base .
+      run: podman build -t ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest --target base .
+
+    - name: Run Rechunker for base
+      id: rechunk-base
+      uses: ublue-os/legacy-rechunk@v1.0.0
+      with:
+        rechunk: 'ghcr.io/ublue-os/legacy-rechunk:v1.0.0-x86_64'
+        ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+        prev-ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+        skip_compression: true
+
+    - name: Load rechunked base image
+      run: |
+        IMAGE=$(podman pull ${{ steps.rechunk-base.outputs.ref }})
+        sudo rm -rf ${{ steps.rechunk-base.outputs.output }}
+        podman tag $IMAGE ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Build NVIDIA image
-      run: podman build -t docker.piaseczny.dev/machine/nuclear:nvidia --target nvidia .
+      run: podman build -t ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia --target nvidia .
+
+    - name: Run Rechunker for nvidia
+      id: rechunk-nvidia
+      uses: ublue-os/legacy-rechunk@v1.0.0
+      with:
+        rechunk: 'ghcr.io/ublue-os/legacy-rechunk:v1.0.0-x86_64'
+        ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia"
+        prev-ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia"
+        skip_compression: true
+
+    - name: Load rechunked nvidia image
+      run: |
+        IMAGE=$(podman pull ${{ steps.rechunk-nvidia.outputs.ref }})
+        sudo rm -rf ${{ steps.rechunk-nvidia.outputs.output }}
+        podman tag $IMAGE ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia
 
     - name: Push base image
-      run: podman push docker.piaseczny.dev/machine/nuclear:latest
+      run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Push NVIDIA image
-      run: podman push docker.piaseczny.dev/machine/nuclear:nvidia
+      run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia
