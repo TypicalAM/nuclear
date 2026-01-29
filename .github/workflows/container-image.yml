@@ -61,6 +61,12 @@ jobs:
         sudo rm -rf ${{ steps.rechunk-base.outputs.output }}
         podman tag $IMAGE ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+    - name: Push base image
+      run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+    - name: Cleanup after base build
+      run: podman system prune -af
+
     - name: Build NVIDIA image
       run: podman build -t ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia --target nvidia .
 
@@ -78,9 +84,6 @@ jobs:
         IMAGE=$(podman pull ${{ steps.rechunk-nvidia.outputs.ref }})
         sudo rm -rf ${{ steps.rechunk-nvidia.outputs.output }}
         podman tag $IMAGE ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia
-
-    - name: Push base image
-      run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Push NVIDIA image
       run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia
