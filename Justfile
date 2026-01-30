@@ -86,10 +86,10 @@ sudoif command *args:
 #
 
 # Build the image using the specified parameters
-build $target_image=image_name $tag=default_tag:
+build $target_image=image_name $tag=default_tag $target="base":
     #!/usr/bin/env bash
 
-    BUILD_ARGS=()
+    BUILD_ARGS=("--target" "${target}")
     if [[ -z "$(git status -s)" ]]; then
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
