@@ -67,11 +67,16 @@ OSRelease={{.OSRelease}}
 Splash=/usr/share/backgrounds/artistic-landscape.bmp
 `))
 
-func generateUKI(entry BootEntry, dstDirectory string) error {
+func generateUKI(entry BootEntry, dstDirectory string, hybridOnly bool) error {
 	split := strings.Split(entry["linux"], "/")
 	uname := split[len(split)-1]
 
-	graphicsModes := []string{"Hybrid", "Vfio", "Integrated"}
+	var graphicsModes []string
+	if hybridOnly {
+		graphicsModes = []string{"Hybrid"}
+	} else {
+		graphicsModes = []string{"Hybrid", "Vfio", "Integrated"}
+	}
 
 	var wg sync.WaitGroup
 	errCh := make(chan error, len(graphicsModes))
@@ -195,6 +200,17 @@ func main() {
 		entry BootEntry
 	}
 
+	hybridOnly := false
+	if _, err := os.Stat("/usr/share/nuclear/packages-added-nvidia"); err == nil {
+		hybridOnly = false
+		log.Println("Hybrid only builds disabled")
+	} else if os.IsNotExist(err) {
+		hybridOnly = true
+		log.Println("Hybrid only builds enabled")
+	} else {
+		log.Printf("Failed to stat nvidia file: %v", err)
+	}
+
 	var wg sync.WaitGroup
 	errCh := make(chan error, len(bootEntries))
 
@@ -212,7 +228,7 @@ func main() {
 				return
 			}
 
-			if err := generateUKI(j.entry, dst); err != nil {
+			if err := generateUKI(j.entry, dst, hybridOnly); err != nil {
 				errCh <- fmt.Errorf("generateUKI %q: %w", j.name, err)
 				return
 			}
