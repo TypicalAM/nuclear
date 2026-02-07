@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euox pipefail
+shopt -s nullglob
 
 kver=$(ls -1 /usr/lib/modules | tail -n1)
 
@@ -18,16 +19,11 @@ install -Dm0755 /tmp/fake-uname /tmp/bin/uname
 # Workaround for akmod permission issue
 chmod 777 /var/tmp
 PATH=/tmp/bin:$PATH akmods --force --kernels ${kver}
-
-if [[ -f "/run/secrets/nuclear.key" ]]; then
-  echo "Signing nvidia modules"
-  shopt -s nullglob
-  for ko in /usr/lib/modules/"$kver"/extra/nvidia/*.ko \
-            /usr/lib/modules/"$kver"/extra/v4l2loopback/*.ko; do
-      [[ -f $ko ]] || continue
-      /usr/src/kernels/"$kver"/scripts/sign-file sha256 \
-          /run/secrets/nuclear.key /etc/pki/akmods/certs/nuclear.crt "$ko"
-  done
-fi
+for ko in /usr/lib/modules/"$kver"/extra/nvidia/*.ko* \
+          /usr/lib/modules/"$kver"/extra/v4l2loopback/*.ko*; do
+    [[ -f $ko ]] || continue
+    /usr/src/kernels/"$kver"/scripts/sign-file sha256 \
+        /run/secrets/nuclear.key /etc/pki/akmods/certs/nuclear.crt "$ko"
+done
 
 chmod 755 /var/tmp
