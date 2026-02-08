@@ -2,11 +2,8 @@
 
 set -euo pipefail
 
-chmod +x /usr/bin/firstboot-setup
-systemctl enable systemd-homed.service
-systemctl enable firstboot-setup.service
-systemctl enable bootloader-update.service
-systemctl enable nix-daemon
 systemctl mask bootc-fetch-apply-updates.timer
+systemctl enable bootloader-update.service
+systemctl enable nix-daemon.service
 systemctl disable rpm-ostree-countme.service 
 systemctl disable rpm-ostree-countme.timer
