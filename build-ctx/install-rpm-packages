@@ -12,7 +12,6 @@ dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fed
 dnf config-manager setopt tailscale-stable.enabled=0
 dnf -y install --enablerepo='tailscale-stable' tailscale
 
-dnf -y copr enable chenxiaolong/sbctl
 dnf -y copr enable erikreider/SwayNotificationCenter
 dnf -y copr enable solopasha/hyprland
 dnf -y copr enable tofik/nwg-shell

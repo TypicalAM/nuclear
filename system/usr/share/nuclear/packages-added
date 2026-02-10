@@ -3,7 +3,6 @@
 ####################################################
 
 sbsigntools
-sbctl
 steam
 ffmpeg
 obs-studio-plugin-x264
