@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - name: Maximize build space
-      uses: ublue-os/remove-unwanted-software@v8
+      uses: ublue-os/remove-unwanted-software@v9
 
     - name: Mount BTRFS for podman storage
       id: container-storage-action
