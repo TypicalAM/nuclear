@@ -35,3 +35,7 @@ curl -O -L https://github.com/garethgeorge/backrest/releases/download/v1.11.2/ba
 mkdir backrest && tar -xzvf backrest_Linux_x86_64.tar.gz -C backrest
 mv backrest/backrest /usr/bin/backrest
 rm -rf backrest backrest_Linux_x86_64.tar.gz
+
+curl -LO https://github.com/pythops/bluetui/releases/download/v0.8.0/bluetui-x86_64-linux-gnu
+mv bluetui-x86_64-linux-gnu /usr/bin/bluetui
+chmod +x /usr/bin/bluetui
