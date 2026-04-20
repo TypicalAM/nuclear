@@ -24,3 +24,6 @@ dracut-config-rescue
 
 # Remove DNF4
 dnf-data
+
+# SwayNotificationCenter
+SwayNotificationCenter
