@@ -16,7 +16,6 @@ dnf -y copr enable erikreider/SwayNotificationCenter
 dnf -y copr enable solopasha/hyprland
 dnf -y copr enable tofik/nwg-shell
 dnf -y copr enable wezfurlong/wezterm-nightly
-dnf -y copr enable petersen/nix
 
 grep -vE '^#' /usr/share/nuclear/packages-added | xargs dnf -y install --allowerasing
 grep -vE '^#' /usr/share/nuclear/packages-removed | xargs dnf -y remove
