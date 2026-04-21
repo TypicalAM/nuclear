@@ -19,6 +19,8 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     rm -rf /opt && \
     ln -s -T /var/opt /opt && \
+    mkdir -p /var/nix && \
+    ln -s -T /var/nix /nix && \
     mkdir /var/roothome && \
     /ctx/install-rpm-packages && \
     /ctx/install-extra-packages && \
