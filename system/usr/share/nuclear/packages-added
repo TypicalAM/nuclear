@@ -4,7 +4,7 @@
 
 light
 sbsigntools
-swaylock-effects
+#swaylock-effects  # not available for F44
 nextcloud-client
 steam
 ffmpeg
@@ -71,15 +71,15 @@ NetworkManager-wwan
 wpa_supplicant
 rsync
 obs-studio
-cliphist
+#cliphist         # solopasha COPR: broken for F44 stable
 grim
 gvfs
 gvfs-mtp
-hypridle
-hyprland
-hyprlock
-hyprpaper
-hyprpolkitagent
+#hypridle         # solopasha COPR: broken for F44 stable
+#hyprland         # solopasha COPR: broken for F44 stable
+#hyprlock         # solopasha COPR: broken for F44 stable
+#hyprpaper        # solopasha COPR: broken for F44 stable
+#hyprpolkitagent  # solopasha COPR: broken for F44 stable
 inxi
 network-manager-applet
 nwg-displays
@@ -91,7 +91,7 @@ qt5ct
 qt6ct
 slurp
 swappy
-swww
+#swww             # solopasha COPR: broken for F44 stable
 wlogout
 yad
 qemu-system-aarch64

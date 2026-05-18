@@ -92,7 +92,7 @@ func generateUKI(entry BootEntry, dstDirectory string, hybridOnly bool) error {
 				"Uname":        uname,
 				"Options":      entry["options"],
 				"GraphicsMode": mode,
-				"OSRelease":    "43", // TODO: not hard-coded
+				"OSRelease":    "44", // TODO: not hard-coded
 			}
 
 			var buf bytes.Buffer

@@ -13,7 +13,7 @@ dnf config-manager setopt tailscale-stable.enabled=0
 dnf -y install --enablerepo='tailscale-stable' tailscale
 
 dnf -y copr enable erikreider/SwayNotificationCenter
-dnf -y copr enable solopasha/hyprland
+#dnf -y copr enable solopasha/hyprland  # broken for F44 stable (libdisplay-info .so.2 vs .so.3)
 dnf -y copr enable tofik/nwg-shell
 dnf -y copr enable wezfurlong/wezterm-nightly
 
