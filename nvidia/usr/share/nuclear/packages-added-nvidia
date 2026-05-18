@@ -3,7 +3,6 @@
 ####################################################
 looking-glass-client
 akmod-nvidia
-nvidia-container-toolkit
 xorg-x11-drv-nvidia-cuda
 supergfxd
 akmod-nvidia
