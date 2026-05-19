@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-# Fedora 44 p11-kit trust store needs to be re-extracted after base stage removes /var/run
-update-ca-trust
-
 dnf config-manager addrepo --from-repofile=https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
+# The upstream .repo hardcodes sslcacert=/etc/pki/tls/certs/ca-bundle.crt which is broken in
+# fedora-bootc containers; drop it so dnf uses the system trust store (works for other repos).
+sed -i '/^sslcacert=/d' /etc/yum.repos.d/nvidia-container-toolkit.repo
 dnf config-manager setopt nvidia-container-toolkit.enabled=0
 dnf config-manager setopt nvidia-container-toolkit.gpgcheck=1
 dnf -y install --enablerepo='nvidia-container-toolkit' nvidia-container-toolkit
