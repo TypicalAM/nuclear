@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# Fedora 44 p11-kit trust store needs to be re-extracted after base stage removes /var/run
+update-ca-trust
+
 dnf config-manager addrepo --from-repofile=https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
 dnf config-manager setopt nvidia-container-toolkit.enabled=0
 dnf config-manager setopt nvidia-container-toolkit.gpgcheck=1
