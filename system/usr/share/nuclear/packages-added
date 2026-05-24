@@ -71,15 +71,15 @@ NetworkManager-wwan
 wpa_supplicant
 rsync
 obs-studio
-#cliphist         # solopasha COPR: broken for F44 stable
+cliphist
 grim
 gvfs
 gvfs-mtp
-#hypridle         # solopasha COPR: broken for F44 stable
-#hyprland         # solopasha COPR: broken for F44 stable
-#hyprlock         # solopasha COPR: broken for F44 stable
-#hyprpaper        # solopasha COPR: broken for F44 stable
-#hyprpolkitagent  # solopasha COPR: broken for F44 stable
+hypridle
+hyprland
+hyprlock
+hyprpaper
+hyprpolkitagent
 inxi
 network-manager-applet
 nwg-displays
@@ -91,7 +91,7 @@ qt5ct
 qt6ct
 slurp
 swappy
-#swww             # solopasha COPR: broken for F44 stable
+swww
 wlogout
 yad
 qemu-system-aarch64
