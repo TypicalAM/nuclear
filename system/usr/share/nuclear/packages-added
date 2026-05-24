@@ -78,8 +78,8 @@ gvfs-mtp
 hypridle
 hyprland
 hyprlock
-hyprpaper
-hyprpolkitagent
+#hyprpaper        # not in ashbuk COPR or F44 repos
+#hyprpolkitagent  # not in ashbuk COPR or F44 repos
 inxi
 network-manager-applet
 nwg-displays
@@ -91,7 +91,7 @@ qt5ct
 qt6ct
 slurp
 swappy
-swww
+#swww             # not in ashbuk COPR or F44 repos
 wlogout
 yad
 qemu-system-aarch64
