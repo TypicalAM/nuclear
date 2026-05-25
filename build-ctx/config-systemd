@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+# openssh-10.2p1 doesn't support the ML-KEM algorithms added by crypto-policies-20251128;
+# it fails to parse the openssh backend config and aborts, breaking all SSH. Remove when
+# OpenSSH on F44 is updated to a version that supports ML-KEM.
+update-crypto-policies --set DEFAULT:NO-PQ
+
 systemctl mask bootc-fetch-apply-updates.timer
 systemctl enable bootloader-update.service
 systemctl enable nix-daemon.service
