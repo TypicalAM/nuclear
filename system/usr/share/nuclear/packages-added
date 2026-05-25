@@ -78,7 +78,7 @@ gvfs-mtp
 hypridle
 hyprland
 hyprlock
-#hyprpaper        # not in ashbuk COPR or F44 repos
+hyprpaper
 #hyprpolkitagent  # not in ashbuk COPR or F44 repos
 inxi
 network-manager-applet

@@ -14,6 +14,7 @@ dnf -y install --enablerepo='tailscale-stable' tailscale
 
 dnf -y copr enable erikreider/SwayNotificationCenter
 dnf -y copr enable ashbuk/Hyprland-Fedora
+dnf -y copr enable solopasha/hyprland
 dnf -y copr enable tofik/nwg-shell
 dnf -y copr enable wezfurlong/wezterm-nightly
 
