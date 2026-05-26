@@ -11,5 +11,5 @@ systemctl mask bootc-fetch-apply-updates.timer
 systemctl enable bootloader-update.service
 systemctl enable nix-daemon.service
 systemctl enable nix.mount
-systemctl disable rpm-ostree-countme.service 
+systemctl disable rpm-ostree-countme.service
 systemctl disable rpm-ostree-countme.timer
