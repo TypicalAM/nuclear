@@ -9,7 +9,7 @@ case "$ARCH" in
 	*) echo "Unsupported architecture: $ARCH" >&2 && exit 1 ;;
 esac
 
-GPG_TUI_VERSION="0.11.1"
+GPG_TUI_VERSION="0.11.2"
 GPG_TUI_FILE="gpg-tui-${GPG_TUI_VERSION}-${ARCH}-unknown-linux-gnu.tar.gz"
 curl -fsSLo "${GPG_TUI_FILE}" "https://github.com/orhun/gpg-tui/releases/download/v${GPG_TUI_VERSION}/${GPG_TUI_FILE}"
 echo "bd15988c30899f279237f98ea645f0fc099c4d35cd4167cae1e3bc1b2f258acf894a2a2a126911c1eabc642fcfc11edb6e931f25a855ea01b6a5829fa0144bcd  ${GPG_TUI_FILE}" | sha512sum --check
