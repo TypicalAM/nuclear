@@ -44,7 +44,7 @@ rm -rf "${GUM_FILE}" "gum_${GUM_VERSION}_Linux_${ARCH}"
 go build -o /usr/bin/update-refind /ctx/refind-updater.go
 rm -rf /var/roothome/.config # go builds cache
 
-DOCKER_CRED_VERSION="0.9.3"
+DOCKER_CRED_VERSION="0.9.7"
 DOCKER_CRED_FILE="docker-credential-pass-v${DOCKER_CRED_VERSION}.linux-${GOARCH}"
 curl -fsSLo "${DOCKER_CRED_FILE}" "https://github.com/docker/docker-credential-helpers/releases/download/v${DOCKER_CRED_VERSION}/${DOCKER_CRED_FILE}"
 echo "dc2d864f5f4e4ddfb23ef8e2193626f5f26eee5be1e49ff2a9ba40d4298392e0  ${DOCKER_CRED_FILE}" | sha256sum --check
