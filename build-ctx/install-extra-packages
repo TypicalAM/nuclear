@@ -2,40 +2,47 @@
 
 set -euo pipefail
 
-curl -LO https://github.com/orhun/gpg-tui/releases/download/v0.11.1/gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz &&
-	tar xzf gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz
+ARCH=$(uname -m)
+case "$ARCH" in
+	x86_64) GOARCH="amd64" ;;
+	aarch64) GOARCH="arm64" ;;
+	*) echo "Unsupported architecture: $ARCH" >&2 && exit 1 ;;
+esac
+
+curl -LO https://github.com/orhun/gpg-tui/releases/download/v0.11.1/gpg-tui-0.11.1-${ARCH}-unknown-linux-gnu.tar.gz &&
+	tar xzf gpg-tui-0.11.1-${ARCH}-unknown-linux-gnu.tar.gz
 mv gpg-tui-0.11.1/gpg-tui /usr/bin
-rm -rf gpg-tui-0.11.1 gpg-tui-0.11.1-x86_64-unknown-linux-gnu.tar.gz
+rm -rf gpg-tui-0.11.1 gpg-tui-0.11.1-${ARCH}-unknown-linux-gnu.tar.gz
 
-curl -LO https://github.com/eza-community/eza/releases/download/v0.23.4/eza_x86_64-unknown-linux-gnu.zip
-unzip eza_x86_64-unknown-linux-gnu.zip
+curl -LO https://github.com/eza-community/eza/releases/download/v0.23.4/eza_${ARCH}-unknown-linux-gnu.zip
+unzip eza_${ARCH}-unknown-linux-gnu.zip
 mv eza /usr/bin
-rm -rf eza_x86_64-unknown-linux-gnu.zip
+rm -rf eza_${ARCH}-unknown-linux-gnu.zip
 
-curl -LO https://github.com/jesseduffield/lazygit/releases/download/v0.44.0/lazygit_0.44.0_Linux_x86_64.tar.gz
-tar xzf lazygit_0.44.0_Linux_x86_64.tar.gz
+curl -LO https://github.com/jesseduffield/lazygit/releases/download/v0.44.0/lazygit_0.44.0_Linux_${ARCH}.tar.gz
+tar xzf lazygit_0.44.0_Linux_${ARCH}.tar.gz
 mv lazygit /usr/bin
-rm -rf lazygit_0.44.0_Linux_x86_64.tar.gz LICENSE README.md
+rm -rf lazygit_0.44.0_Linux_${ARCH}.tar.gz LICENSE README.md
 
-curl -LO https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum_0.14.5_Linux_x86_64.tar.gz
-tar xzf gum_0.14.5_Linux_x86_64.tar.gz
-mv gum_0.14.5_Linux_x86_64/gum /usr/bin
-rm -rf gum_0.14.5_Linux_x86_64.tar.gz gum_0.14.5_Linux_x86_64
+curl -LO https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum_0.14.5_Linux_${ARCH}.tar.gz
+tar xzf gum_0.14.5_Linux_${ARCH}.tar.gz
+mv gum_0.14.5_Linux_${ARCH}/gum /usr/bin
+rm -rf gum_0.14.5_Linux_${ARCH}.tar.gz gum_0.14.5_Linux_${ARCH}
 
 go build -o /usr/bin/update-refind /ctx/refind-updater.go
 rm -rf /var/roothome/.config # go builds cache
 
-curl -L https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-amd64 -o /usr/bin/docker-credential-pass
+curl -L https://github.com/docker/docker-credential-helpers/releases/download/v0.9.3/docker-credential-pass-v0.9.3.linux-${GOARCH} -o /usr/bin/docker-credential-pass
 chmod +x /usr/bin/docker-credential-pass
 
 curl -s https://ohmyposh.dev/install.sh | bash -s -- -d /usr/bin
 curl -fsLS get.chezmoi.io | bash -s -- -b /usr/bin
 
-curl -O -L https://github.com/garethgeorge/backrest/releases/download/v1.11.2/backrest_Linux_x86_64.tar.gz
-mkdir backrest && tar -xzvf backrest_Linux_x86_64.tar.gz -C backrest
+curl -O -L https://github.com/garethgeorge/backrest/releases/download/v1.11.2/backrest_Linux_${ARCH}.tar.gz
+mkdir backrest && tar -xzvf backrest_Linux_${ARCH}.tar.gz -C backrest
 mv backrest/backrest /usr/bin/backrest
-rm -rf backrest backrest_Linux_x86_64.tar.gz
+rm -rf backrest backrest_Linux_${ARCH}.tar.gz
 
-curl -LO https://github.com/pythops/bluetui/releases/download/v0.8.0/bluetui-x86_64-linux-gnu
-mv bluetui-x86_64-linux-gnu /usr/bin/bluetui
+curl -LO https://github.com/pythops/bluetui/releases/download/v0.8.0/bluetui-${ARCH}-linux-gnu
+mv bluetui-${ARCH}-linux-gnu /usr/bin/bluetui
 chmod +x /usr/bin/bluetui
