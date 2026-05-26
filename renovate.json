@@ -2,5 +2,79 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["GPG_TUI_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "orhun/gpg-tui",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["EZA_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "eza-community/eza",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["LAZYGIT_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "jesseduffield/lazygit",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["GUM_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "charmbracelet/gum",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["DOCKER_CRED_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "docker/docker-credential-helpers",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["OMP_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "JanDeDobbeleer/oh-my-posh",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["CHEZMOI_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "twpayne/chezmoi",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["BACKREST_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "garethgeorge/backrest",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["^build-ctx/install-extra-packages$"],
+      "matchStrings": ["BLUETUI_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "pythops/bluetui",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    }
   ]
 }
