@@ -2,7 +2,7 @@
 set -euox pipefail
 shopt -s nullglob
 
-kver=$(ls -1 /usr/lib/modules | tail -n1)
+kver=$(ls /usr/lib/modules | sort -V | tail -n1)
 
 cat >/tmp/fake-uname <<EOF
 #!/usr/bin/env bash
@@ -18,7 +18,7 @@ install -Dm0755 /tmp/fake-uname /tmp/bin/uname
 
 # Workaround for akmod permission issue
 chmod 777 /var/tmp
-PATH=/tmp/bin:$PATH akmods --force --kernels ${kver}
+PATH=/tmp/bin:$PATH akmods --force --kernels "${kver}"
 
 for ko in /usr/lib/modules/"$kver"/extra/nvidia/*.ko* \
 	/usr/lib/modules/"$kver"/extra/v4l2loopback/*.ko*; do

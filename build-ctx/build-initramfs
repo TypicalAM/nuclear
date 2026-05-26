@@ -3,10 +3,10 @@ set -eoux pipefail
 
 echo "Executing build-initramfs"
 
-kver=$(ls -1 /usr/lib/modules | tail -n1)
+kver=$(ls /usr/lib/modules | sort -V | tail -n1)
 if [[ -f /usr/share/nuclear/packages-added-nvidia ]]; then
-	dracut --no-hostonly --kver $kver --reproducible --zstd -v --add ostree --add fido2 -f "/usr/lib/modules/$kver/initramfs.img"
+	dracut --no-hostonly --kver "$kver" --reproducible --zstd -v --add ostree --add fido2 -f "/usr/lib/modules/$kver/initramfs.img"
 else
-	dracut --no-hostonly --omit "drm network network-manager ifcfg nfs nvmf plymouth" --kver $kver --reproducible --zstd -v --add ostree -f "/usr/lib/modules/$kver/initramfs.img"
+	dracut --no-hostonly --omit "drm network network-manager ifcfg nfs nvmf plymouth" --kver "$kver" --reproducible --zstd -v --add ostree -f "/usr/lib/modules/$kver/initramfs.img"
 fi
-chmod 0600 /usr/lib/modules/$kver/initramfs.img
+chmod 0600 "/usr/lib/modules/$kver/initramfs.img"
