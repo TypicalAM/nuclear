@@ -162,30 +162,42 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
     #!/usr/bin/env bash
     set -euo pipefail
 
+    function sudoif() {
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+
     args="--type ${type} "
     args+="--use-librepo=True "
     args+="--rootfs=btrfs"
 
     BUILDTMP=$(mktemp -p "${PWD}" -d -t _build-bib.XXXXXXXXXX)
 
-    sudo podman run \
+    sudoif podman run \
       --rm \
       -it \
       --privileged \
       --pull=newer \
       --net=host \
       --security-opt label=type:unconfined_t \
-      -v $(pwd)/${config}:/config.toml:ro \
-      -v $BUILDTMP:/output \
+      -v "$(pwd)/${config}":/config.toml:ro \
+      -v "${BUILDTMP}":/output \
       -v /var/lib/containers/storage:/var/lib/containers/storage \
       "${bib_image}" \
       ${args} \
       "${target_image}:${tag}"
 
     mkdir -p output
-    sudo mv -f $BUILDTMP/* output/
-    sudo rmdir $BUILDTMP
-    sudo chown -R $USER:$USER output/
+    sudoif mv -f "${BUILDTMP}"/* output/
+    sudoif rmdir "${BUILDTMP}"
+    sudoif chown -R "$USER:$USER" output/
 
 # Podman builds the image from the Containerfile and creates a bootable image
 # Parameters:
