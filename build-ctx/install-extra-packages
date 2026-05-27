@@ -33,7 +33,7 @@ tar xzf "${LAZYGIT_FILE}"
 mv lazygit /usr/bin
 rm -rf "${LAZYGIT_FILE}" LICENSE README.md
 
-GUM_VERSION="0.14.5"
+GUM_VERSION="0.17.0"
 GUM_FILE="gum_${GUM_VERSION}_Linux_${ARCH}.tar.gz"
 curl -fsSLo "${GUM_FILE}" "https://github.com/charmbracelet/gum/releases/download/v${GUM_VERSION}/${GUM_FILE}"
 echo "ee81b7ccbeb205fec50175371d787aef5a27b83b607a9d7cf64e5a88fbfc0b55  ${GUM_FILE}" | sha256sum --check
