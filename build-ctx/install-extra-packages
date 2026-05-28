@@ -25,7 +25,7 @@ unzip "${EZA_FILE}"
 mv eza /usr/bin
 rm -f "${EZA_FILE}"
 
-LAZYGIT_VERSION="0.44.0"
+LAZYGIT_VERSION="0.62.1"
 LAZYGIT_FILE="lazygit_${LAZYGIT_VERSION}_Linux_${ARCH}.tar.gz"
 curl -fsSLo "${LAZYGIT_FILE}" "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/${LAZYGIT_FILE}"
 echo "5c0fbf21161b0f4b2ec7d5dbe58b3df7b8feca40182c7c2d95792db9d9ff645c  ${LAZYGIT_FILE}" | sha256sum --check
