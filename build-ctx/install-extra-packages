@@ -66,7 +66,7 @@ tar xzf "${CHEZMOI_FILE}" chezmoi
 mv chezmoi /usr/bin
 rm -f "${CHEZMOI_FILE}"
 
-BACKREST_VERSION="1.11.2"
+BACKREST_VERSION="1.13.0"
 BACKREST_FILE="backrest_Linux_${ARCH}.tar.gz"
 curl -fsSLo "${BACKREST_FILE}" "https://github.com/garethgeorge/backrest/releases/download/v${BACKREST_VERSION}/${BACKREST_FILE}"
 echo "35b3ff9835ac77ee6d2986310a4f169418bea10c038351b88917438a23cd16f9  ${BACKREST_FILE}" | sha256sum --check
