@@ -58,8 +58,8 @@ sudoif command *args:
     function sudoif(){
         if [[ "${UID}" -eq 0 ]]; then
             "$@"
-        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
-            sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" && -x "${SSH_ASKPASS}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            SUDO_ASKPASS="${SSH_ASKPASS}" sudo --askpass "$@" || exit 1
         elif [[ "$(command -v sudo)" ]]; then
             sudo "$@" || exit 1
         else
@@ -137,7 +137,10 @@ _rootful_load_image $target_image=image_name $tag=default_tag:
 
     if [[ $return_code -eq 0 ]]; then
         # If the image is found, load it into rootful podman
-        ID=$(just sudoif podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'")
+        _ID_TMP=$(mktemp)
+        just sudoif podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'" > "${_ID_TMP}"
+        ID=$(cat "${_ID_TMP}")
+        rm -f "${_ID_TMP}"
         if [[ "$ID" != "$USER_IMG_ID" ]]; then
             # If the image ID is not found or different from user, copy the image from user podman to root podman
             COPYTMP=$(mktemp -p "${PWD}" -d -t _build_podman_scp.XXXXXXXXXX)
@@ -165,8 +168,8 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
     function sudoif() {
         if [[ "${UID}" -eq 0 ]]; then
             "$@"
-        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
-            sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" && -x "${SSH_ASKPASS}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            SUDO_ASKPASS="${SSH_ASKPASS}" sudo --askpass "$@" || exit 1
         elif [[ "$(command -v sudo)" ]]; then
             sudo "$@" || exit 1
         else
