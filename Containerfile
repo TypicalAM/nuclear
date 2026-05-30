@@ -10,6 +10,7 @@ LABEL org.opencontainers.image.description="Customized image of Fedora Bootc"
 LABEL org.opencontainers.image.source="https://github.com/TypicalAM/nuclear"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL ostree.bootable=1
+LABEL containers.bootc=1
 
 COPY system /
 
