@@ -6,6 +6,7 @@ light
 sbsigntools
 #swaylock-effects  # not available for F44
 nextcloud-client
+wireguard-tools
 steam
 ffmpeg
 obs-studio-plugin-x264
