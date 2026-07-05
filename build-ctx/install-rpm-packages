@@ -18,8 +18,28 @@ dnf -y copr enable solopasha/hyprland
 dnf -y copr enable tofik/nwg-shell
 dnf -y copr enable wezfurlong/wezterm-nightly
 
+# solopasha/hyprland ships bleeding-edge Plasma (kwin, kf6, ...) alongside the Hyprland
+# packages we actually want from it. Its kscreenlocker periodically lags kwin, producing
+# an ABI skew (kwin_wayland: undefined symbol ScreenLocker::KSldApp::inhibitSuspend) that
+# black-screens the SDDM greeter after LUKS unlock. Demote the repo below Fedora (default
+# priority 99) so the matched Plasma set always comes from Fedora; Hyprland-only packages,
+# absent from Fedora, still install from here.
+dnf config-manager setopt "copr:copr.fedorainfracloud.org:solopasha:hyprland.priority=200"
+
 grep -vE '^#' /usr/share/nuclear/packages-added | xargs dnf -y install --allowerasing
 grep -vE '^#' /usr/share/nuclear/packages-removed | xargs dnf -y remove
 dnf -y autoremove
+
+# kwin and kscreenlocker are part of the same Plasma release and MUST match: kwin_wayland
+# links against ScreenLocker::KSldApp symbols in libKScreenLocker, so a version skew crashes
+# the SDDM greeter on boot (black screen after LUKS). Fail the build loudly rather than ship
+# an unbootable image.
+kwin_ver=$(rpm -q --qf '%{VERSION}' kwin)
+ksl_ver=$(rpm -q --qf '%{VERSION}' kscreenlocker)
+if [[ "$kwin_ver" != "$ksl_ver" ]]; then
+	echo "FATAL: kwin ($kwin_ver) and kscreenlocker ($ksl_ver) version mismatch; the greeter would black-screen. Check repo priorities." >&2
+	exit 1
+fi
+
 dnf clean all
 rm -rf /var/lib/dnf
