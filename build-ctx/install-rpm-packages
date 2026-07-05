@@ -18,13 +18,15 @@ dnf -y copr enable solopasha/hyprland
 dnf -y copr enable tofik/nwg-shell
 dnf -y copr enable wezfurlong/wezterm-nightly
 
-# Fedora's updates repo periodically ships a newer kwin before the matching kscreenlocker
+# Fedora's updates repos periodically ship a newer kwin before the matching kscreenlocker
 # lands (e.g. kwin 6.7.2 while kscreenlocker is still 6.6.4). kwin_wayland links against
 # ScreenLocker::KSldApp symbols in libKScreenLocker, so that skew crashes the SDDM greeter
 # on boot (undefined symbol ...KSldApp...inhibitSuspend) -> black screen after LUKS unlock.
-# Hold both back from updates so they stay the matched pair already in the base image and
-# only advance together when the base image does.
-dnf config-manager setopt "updates.excludepkgs=kwin* kscreenlocker"
+# Hold the pair back from every updates channel (the newer kwin lives there, not in a copr)
+# so they stay matched at the base image versions and only advance together with the base.
+for repo in updates updates-archive updates-testing; do
+	dnf config-manager setopt "${repo}.excludepkgs=kwin* kscreenlocker"
+done
 
 grep -vE '^#' /usr/share/nuclear/packages-added | xargs dnf -y install --allowerasing
 grep -vE '^#' /usr/share/nuclear/packages-removed | xargs dnf -y remove
@@ -37,7 +39,7 @@ dnf -y autoremove
 kwin_ver=$(rpm -q --qf '%{VERSION}' kwin)
 ksl_ver=$(rpm -q --qf '%{VERSION}' kscreenlocker)
 if [[ "$kwin_ver" != "$ksl_ver" ]]; then
-	echo "FATAL: kwin ($kwin_ver) and kscreenlocker ($ksl_ver) version mismatch; the greeter would black-screen. Check repo priorities." >&2
+	echo "FATAL: kwin ($kwin_ver) and kscreenlocker ($ksl_ver) version mismatch; the greeter would black-screen. Widen the updates excludepkgs above to cover wherever the newer kwin came from." >&2
 	exit 1
 fi
 
