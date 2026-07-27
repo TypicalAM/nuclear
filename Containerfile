@@ -26,6 +26,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     mkdir /var/roothome && \
     /ctx/install-rpm-packages && \
     /ctx/install-extra-packages && \
+    /ctx/install-sunshine && \
     /ctx/config-yubikey && \
     /ctx/config-systemd && \
     /ctx/config-themes && \

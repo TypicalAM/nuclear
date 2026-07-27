@@ -1,0 +1,17 @@
+[Unit]
+Description=Sunshine self-hosted game stream host for Moonlight
+StartLimitIntervalSec=500
+StartLimitBurst=5
+# Start inside the graphical session so Sunshine can reach WAYLAND_DISPLAY and the user's
+# PipeWire/PulseAudio socket. Not enabled by default; enable per user with:
+#   systemctl --user enable --now sunshine.service
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/sunshine
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

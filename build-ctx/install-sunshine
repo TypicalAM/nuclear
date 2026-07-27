@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# Install a pinned, working build of Sunshine (the Moonlight stream host) into the image.
+#
+# We vendor LizardByte's AppImage at a fixed version rather than pulling a COPR: the COPRs
+# (lizardbyte/beta, pvermeer/sunshine) are rolling and routinely lack a build for a brand-new
+# Fedora, which would block image builds. Pinning the AppImage keeps the host reproducible.
+#
+# The AppImage resolves its libraries via an $ORIGIN rpath and its assets (web UI + encoder
+# shaders) via paths relative to the CWD. Neither survives the file capability we must set for
+# screen capture (a setcap'd binary runs in secure-execution mode, where glibc ignores $ORIGIN
+# and LD_LIBRARY_PATH). So we normalize the layout at build time:
+#   - extract to a fixed location, /usr/lib/sunshine
+#   - patchelf the bundled binary to an ABSOLUTE rpath so its libs load under secure-exec
+#   - setcap cap_sys_admin+p for KMS/DRM capture on Wayland (KDE/GNOME lack wlr-export-dmabuf);
+#     ostree/bootc preserves the security.capability xattr into the deployed image
+#   - ship /usr/bin/sunshine, a launcher that cd's into the AppDir (so the relative asset paths
+#     resolve) and forces the GTK tray onto x11 (its Wayland backend crashes), running as the
+#     invoking user so audio reaches the user's PipeWire/PulseAudio socket.
+
+set -euo pipefail
+
+SUNSHINE_VERSION="2025.924.154138"
+SUNSHINE_FILE="sunshine.AppImage"
+SUNSHINE_SHA256="83921dd4e09fd517007150bc6a1a93b63db22a56f7da99025a3d7765c24b75fa"
+
+workdir="$(mktemp -d)"
+cd "$workdir"
+
+curl -fsSLo "${SUNSHINE_FILE}" \
+	"https://github.com/LizardByte/Sunshine/releases/download/v${SUNSHINE_VERSION}/${SUNSHINE_FILE}"
+echo "${SUNSHINE_SHA256}  ${SUNSHINE_FILE}" | sha256sum --check
+
+chmod +x "${SUNSHINE_FILE}"
+"./${SUNSHINE_FILE}" --appimage-extract >/dev/null
+
+rm -rf /usr/lib/sunshine
+mv squashfs-root /usr/lib/sunshine
+
+BIN="/usr/lib/sunshine/usr/bin/sunshine-${SUNSHINE_VERSION}"
+patchelf --set-rpath /usr/lib/sunshine/usr/lib "${BIN}"
+setcap cap_sys_admin+p "${BIN}"
+
+install -Dm755 /dev/stdin /usr/bin/sunshine <<'EOF'
+#!/usr/bin/env bash
+# Launcher for the vendored Sunshine AppImage (see build-ctx/install-sunshine).
+# cd into the AppDir so Sunshine's relative asset/shader/web-UI paths resolve; force the GTK
+# tray onto x11 (Wayland backend crashes). Run as your user (no sudo) so audio works.
+cd /usr/lib/sunshine || exit 1
+export GDK_BACKEND=x11
+exec ./usr/bin/sunshine "$@"
+EOF
+
+cd /
+rm -rf "$workdir"

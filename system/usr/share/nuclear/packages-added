@@ -5,6 +5,8 @@
 hyprlang
 light
 sbsigntools
+# patchelf: used by build-ctx/install-sunshine to rewrite the vendored AppImage's rpath
+patchelf
 #swaylock-effects  # not available for F44
 nextcloud-client
 wireguard-tools
