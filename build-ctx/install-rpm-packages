@@ -14,7 +14,12 @@ dnf -y install --enablerepo='tailscale-stable' tailscale
 
 dnf -y copr enable erikreider/SwayNotificationCenter
 dnf -y copr enable ashbuk/Hyprland-Fedora
-dnf -y copr enable solopasha/hyprland
+# solopasha/hyprland has follow_fedora_branching disabled, so it only ever carries a
+# fedora-rawhide chroot; the fedora-44 one vanished when F44 branched off rawhide and
+# plain `copr enable` now dies with "Chroot not found in the given Copr project
+# (fedora-44-x86_64)". The rawhide chroot still holds the fc44-tagged builds we were
+# already using, so point at it explicitly until the project ships an F44 chroot.
+dnf -y copr enable solopasha/hyprland fedora-rawhide-x86_64
 dnf -y copr enable tofik/nwg-shell
 dnf -y copr enable wezfurlong/wezterm-nightly
 
