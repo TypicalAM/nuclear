@@ -58,7 +58,7 @@ echo "7f345282675ab5e93edea15975642b55f3639ce5e0f0f39dfdb9fecb4c025e02  ${OMP_FI
 install -Dm755 "${OMP_FILE}" /usr/bin/oh-my-posh
 rm -f "${OMP_FILE}"
 
-CHEZMOI_VERSION="2.70.4"
+CHEZMOI_VERSION="2.72.1"
 CHEZMOI_FILE="chezmoi_${CHEZMOI_VERSION}_linux-glibc_${GOARCH}.tar.gz"
 curl -fsSLo "${CHEZMOI_FILE}" "https://github.com/twpayne/chezmoi/releases/download/v${CHEZMOI_VERSION}/${CHEZMOI_FILE}"
 echo "7382f585d35647ebb492bd6345466e7f35564068b78285bb029cb2f35056ecf4  ${CHEZMOI_FILE}" | sha256sum --check
