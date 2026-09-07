@@ -17,7 +17,7 @@ tar xzf "${GPG_TUI_FILE}"
 mv "gpg-tui-${GPG_TUI_VERSION}/gpg-tui" /usr/bin
 rm -rf "gpg-tui-${GPG_TUI_VERSION}" "${GPG_TUI_FILE}"
 
-EZA_VERSION="0.23.4"
+EZA_VERSION="0.23.5"
 EZA_FILE="eza_${ARCH}-unknown-linux-gnu.zip"
 curl -fsSLo "${EZA_FILE}" "https://github.com/eza-community/eza/releases/download/v${EZA_VERSION}/${EZA_FILE}"
 echo "0a1c72faefcb511b08b1b8470aedf4a6a3a94c4d56f8f65da3cb7d8c5de051f1  ${EZA_FILE}" | sha256sum --check
