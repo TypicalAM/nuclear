@@ -74,7 +74,7 @@ mkdir backrest && tar -xzf "${BACKREST_FILE}" -C backrest
 mv backrest/backrest /usr/bin/backrest
 rm -rf backrest "${BACKREST_FILE}"
 
-BLUETUI_VERSION="0.8.1"
+BLUETUI_VERSION="0.8.2"
 BLUETUI_FILE="bluetui-${ARCH}-linux-musl"
 curl -fsSLo "${BLUETUI_FILE}" "https://github.com/pythops/bluetui/releases/download/v${BLUETUI_VERSION}/${BLUETUI_FILE}"
 echo "c6d133930af3ef85d5fb6492c98982958619284d1f583c2c8ecf46992460d60e  ${BLUETUI_FILE}" | sha256sum --check
