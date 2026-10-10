@@ -51,7 +51,7 @@ echo "ae80a143101672b53c65cd5aa05028897068d39e2649adff83a520ef3218355d  ${DOCKER
 mv "${DOCKER_CRED_FILE}" /usr/bin/docker-credential-pass
 chmod +x /usr/bin/docker-credential-pass
 
-OMP_VERSION="31.3.0"
+OMP_VERSION="31.7.0"
 OMP_FILE="posh-linux-${GOARCH}"
 curl -fsSLo "${OMP_FILE}" "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v${OMP_VERSION}/${OMP_FILE}"
 echo "92a253b607dbc632f9e45c9de06cb9650a1a3e7c36df2012a7b7600f22dcad80  ${OMP_FILE}" | sha256sum --check
