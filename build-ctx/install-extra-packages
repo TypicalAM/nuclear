@@ -9,34 +9,42 @@ case "$ARCH" in
 	*) echo "Unsupported architecture: $ARCH" >&2 && exit 1 ;;
 esac
 
-GPG_TUI_VERSION="0.11.2"
+# renovate: repo=orhun/gpg-tui
+GPG_TUI_TAG="v0.11.2"
+GPG_TUI_VERSION="${GPG_TUI_TAG#v}"
 GPG_TUI_FILE="gpg-tui-${GPG_TUI_VERSION}-${ARCH}-unknown-linux-gnu.tar.gz"
-curl -fsSLo "${GPG_TUI_FILE}" "https://github.com/orhun/gpg-tui/releases/download/v${GPG_TUI_VERSION}/${GPG_TUI_FILE}"
+curl -fsSLo "${GPG_TUI_FILE}" "https://github.com/orhun/gpg-tui/releases/download/${GPG_TUI_TAG}/${GPG_TUI_FILE}"
 echo "e5f22153b1b852d5bb620540ade587ed7db33c870c4ccaff212f1d56985a3a7ba62a5780f7264158ef0e42f5d7586284f6b61d2d0c73bba24f15bb1b20b84780  ${GPG_TUI_FILE}" | sha512sum --check
 tar xzf "${GPG_TUI_FILE}"
 mv "gpg-tui-${GPG_TUI_VERSION}/gpg-tui" /usr/bin
 rm -rf "gpg-tui-${GPG_TUI_VERSION}" "${GPG_TUI_FILE}"
 
-EZA_VERSION="0.23.5"
+# renovate: repo=eza-community/eza
+EZA_TAG="v0.23.5"
+EZA_VERSION="${EZA_TAG#v}"
 EZA_FILE="eza_${ARCH}-unknown-linux-gnu.zip"
-curl -fsSLo "${EZA_FILE}" "https://github.com/eza-community/eza/releases/download/v${EZA_VERSION}/${EZA_FILE}"
+curl -fsSLo "${EZA_FILE}" "https://github.com/eza-community/eza/releases/download/${EZA_TAG}/${EZA_FILE}"
 echo "f3bfd758743699e6c8ac38c6c65cf4aadc8f02d046a0af5a4c4b28e59e305a5a  ${EZA_FILE}" | sha256sum --check
 unzip "${EZA_FILE}"
 mv eza /usr/bin
 rm -f "${EZA_FILE}"
 
-LAZYGIT_VERSION="0.66.0"
-LAZYGIT_FILE="lazygit_${LAZYGIT_VERSION}_Linux_${ARCH}.tar.gz"
-curl -fsSLo "${LAZYGIT_FILE}" "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/${LAZYGIT_FILE}"
-echo "02beacbcda0fa342e50ae3480ba8147307353af3fb28e1d5f790e02329c201a6  ${LAZYGIT_FILE}" | sha256sum --check
+# renovate: repo=jesseduffield/lazygit
+LAZYGIT_TAG="v0.66.0"
+LAZYGIT_VERSION="${LAZYGIT_TAG#v}"
+LAZYGIT_FILE="lazygit_${LAZYGIT_VERSION}_linux_${ARCH}.tar.gz"
+curl -fsSLo "${LAZYGIT_FILE}" "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_TAG}/${LAZYGIT_FILE}"
+echo "5b45541155d20bd32bf2cc5ab5b7e3d91c2eebf0fb1242281350edc27d59d2b7  ${LAZYGIT_FILE}" | sha256sum --check
 tar xzf "${LAZYGIT_FILE}"
 mv lazygit /usr/bin
 rm -rf "${LAZYGIT_FILE}" LICENSE README.md
 
-GUM_VERSION="2.0.2"
+# renovate: repo=charmbracelet/gum
+GUM_TAG="v2.0.2"
+GUM_VERSION="${GUM_TAG#v}"
 GUM_FILE="gum_${GUM_VERSION}_Linux_${ARCH}.tar.gz"
-curl -fsSLo "${GUM_FILE}" "https://github.com/charmbracelet/gum/releases/download/v${GUM_VERSION}/${GUM_FILE}"
-echo "4dfe4547f960813864c803b3617aa64427fa32ca566707fde949e08975297c48  ${GUM_FILE}" | sha256sum --check
+curl -fsSLo "${GUM_FILE}" "https://github.com/charmbracelet/gum/releases/download/${GUM_TAG}/${GUM_FILE}"
+echo "d842e06d93dbed90af48cb8dd10698db6f22e331fc40346bb37bbc753109edc2  ${GUM_FILE}" | sha256sum --check
 tar xzf "${GUM_FILE}"
 mv "gum_${GUM_VERSION}_Linux_${ARCH}/gum" /usr/bin
 rm -rf "${GUM_FILE}" "gum_${GUM_VERSION}_Linux_${ARCH}"
@@ -44,39 +52,49 @@ rm -rf "${GUM_FILE}" "gum_${GUM_VERSION}_Linux_${ARCH}"
 go build -o /usr/bin/update-refind /ctx/refind-updater.go
 rm -rf /var/roothome/.config # go builds cache
 
-DOCKER_CRED_VERSION="0.9.10"
+# renovate: repo=docker/docker-credential-helpers
+DOCKER_CRED_TAG="v0.9.10"
+DOCKER_CRED_VERSION="${DOCKER_CRED_TAG#v}"
 DOCKER_CRED_FILE="docker-credential-pass-v${DOCKER_CRED_VERSION}.linux-${GOARCH}"
-curl -fsSLo "${DOCKER_CRED_FILE}" "https://github.com/docker/docker-credential-helpers/releases/download/v${DOCKER_CRED_VERSION}/${DOCKER_CRED_FILE}"
-echo "ae80a143101672b53c65cd5aa05028897068d39e2649adff83a520ef3218355d  ${DOCKER_CRED_FILE}" | sha256sum --check
+curl -fsSLo "${DOCKER_CRED_FILE}" "https://github.com/docker/docker-credential-helpers/releases/download/${DOCKER_CRED_TAG}/${DOCKER_CRED_FILE}"
+echo "32ebf7948b801621237b2ce81a6a0b8097e78c15a6f223b9af8d551161f17552  ${DOCKER_CRED_FILE}" | sha256sum --check
 mv "${DOCKER_CRED_FILE}" /usr/bin/docker-credential-pass
 chmod +x /usr/bin/docker-credential-pass
 
-OMP_VERSION="31.7.0"
+# renovate: repo=JanDeDobbeleer/oh-my-posh
+OMP_TAG="v31.7.0"
+OMP_VERSION="${OMP_TAG#v}"
 OMP_FILE="posh-linux-${GOARCH}"
-curl -fsSLo "${OMP_FILE}" "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v${OMP_VERSION}/${OMP_FILE}"
-echo "92a253b607dbc632f9e45c9de06cb9650a1a3e7c36df2012a7b7600f22dcad80  ${OMP_FILE}" | sha256sum --check
+curl -fsSLo "${OMP_FILE}" "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/${OMP_TAG}/${OMP_FILE}"
+echo "bcc5daab2b979254e83c0dcd2d8b72580f07ced682eafb4c6cd68229c9686664  ${OMP_FILE}" | sha256sum --check
 install -Dm755 "${OMP_FILE}" /usr/bin/oh-my-posh
 rm -f "${OMP_FILE}"
 
-CHEZMOI_VERSION="2.73.0"
+# renovate: repo=twpayne/chezmoi
+CHEZMOI_TAG="v2.73.0"
+CHEZMOI_VERSION="${CHEZMOI_TAG#v}"
 CHEZMOI_FILE="chezmoi_${CHEZMOI_VERSION}_linux-glibc_${GOARCH}.tar.gz"
-curl -fsSLo "${CHEZMOI_FILE}" "https://github.com/twpayne/chezmoi/releases/download/v${CHEZMOI_VERSION}/${CHEZMOI_FILE}"
-echo "a2be1b8bcdf06c6f173e070bb3ddbcc52c50478fe9b57f6e6c63d15c7cff4f03  ${CHEZMOI_FILE}" | sha256sum --check
+curl -fsSLo "${CHEZMOI_FILE}" "https://github.com/twpayne/chezmoi/releases/download/${CHEZMOI_TAG}/${CHEZMOI_FILE}"
+echo "b597729b687af4488a848240134cb633de8ca0f04e0d26d48f400ee2ac338ffa  ${CHEZMOI_FILE}" | sha256sum --check
 tar xzf "${CHEZMOI_FILE}" chezmoi
 mv chezmoi /usr/bin
 rm -f "${CHEZMOI_FILE}"
 
-BACKREST_VERSION="1.14.1"
+# renovate: repo=garethgeorge/backrest
+BACKREST_TAG="v1.14.1"
+BACKREST_VERSION="${BACKREST_TAG#v}"
 BACKREST_FILE="backrest_Linux_${ARCH}.tar.gz"
-curl -fsSLo "${BACKREST_FILE}" "https://github.com/garethgeorge/backrest/releases/download/v${BACKREST_VERSION}/${BACKREST_FILE}"
+curl -fsSLo "${BACKREST_FILE}" "https://github.com/garethgeorge/backrest/releases/download/${BACKREST_TAG}/${BACKREST_FILE}"
 echo "acc7835a9c55b3d254f0fa285cacbe87ac912cb7e069d0211924838020e6921c  ${BACKREST_FILE}" | sha256sum --check
 mkdir backrest && tar -xzf "${BACKREST_FILE}" -C backrest
 mv backrest/backrest /usr/bin/backrest
 rm -rf backrest "${BACKREST_FILE}"
 
-BLUETUI_VERSION="0.8.2"
+# renovate: repo=pythops/bluetui
+BLUETUI_TAG="v0.8.2"
+BLUETUI_VERSION="${BLUETUI_TAG#v}"
 BLUETUI_FILE="bluetui-${ARCH}-linux-musl"
-curl -fsSLo "${BLUETUI_FILE}" "https://github.com/pythops/bluetui/releases/download/v${BLUETUI_VERSION}/${BLUETUI_FILE}"
-echo "c6d133930af3ef85d5fb6492c98982958619284d1f583c2c8ecf46992460d60e  ${BLUETUI_FILE}" | sha256sum --check
+curl -fsSLo "${BLUETUI_FILE}" "https://github.com/pythops/bluetui/releases/download/${BLUETUI_TAG}/${BLUETUI_FILE}"
+echo "b476ee473cb4f7a48cd75d440e991bedc835ff5ac704aac1f1992f8e826222fd  ${BLUETUI_FILE}" | sha256sum --check
 mv "${BLUETUI_FILE}" /usr/bin/bluetui
 chmod +x /usr/bin/bluetui
