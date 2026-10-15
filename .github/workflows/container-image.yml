@@ -18,7 +18,7 @@ env:
 
 jobs:
   io-image:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
     - name: Maximize build space
       uses: ublue-os/remove-unwanted-software@v9
