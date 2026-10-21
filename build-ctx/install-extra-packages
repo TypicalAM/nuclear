@@ -53,11 +53,11 @@ go build -o /usr/bin/update-refind /ctx/refind-updater.go
 rm -rf /var/roothome/.config # go builds cache
 
 # renovate: repo=docker/docker-credential-helpers
-DOCKER_CRED_TAG="v0.9.10"
+DOCKER_CRED_TAG="v0.9.12"
 DOCKER_CRED_VERSION="${DOCKER_CRED_TAG#v}"
 DOCKER_CRED_FILE="docker-credential-pass-v${DOCKER_CRED_VERSION}.linux-${GOARCH}"
 curl -fsSLo "${DOCKER_CRED_FILE}" "https://github.com/docker/docker-credential-helpers/releases/download/${DOCKER_CRED_TAG}/${DOCKER_CRED_FILE}"
-echo "32ebf7948b801621237b2ce81a6a0b8097e78c15a6f223b9af8d551161f17552  ${DOCKER_CRED_FILE}" | sha256sum --check
+echo "0369caf75820b2a927b8f7435cdd6b447583e0bb30f2b0633ed83f24b4d59a37  ${DOCKER_CRED_FILE}" | sha256sum --check
 mv "${DOCKER_CRED_FILE}" /usr/bin/docker-credential-pass
 chmod +x /usr/bin/docker-credential-pass
 
