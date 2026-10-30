@@ -62,11 +62,11 @@ mv "${DOCKER_CRED_FILE}" /usr/bin/docker-credential-pass
 chmod +x /usr/bin/docker-credential-pass
 
 # renovate: repo=JanDeDobbeleer/oh-my-posh
-OMP_TAG="v31.7.0"
+OMP_TAG="v31.9.1"
 OMP_VERSION="${OMP_TAG#v}"
 OMP_FILE="posh-linux-${GOARCH}"
 curl -fsSLo "${OMP_FILE}" "https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/${OMP_TAG}/${OMP_FILE}"
-echo "bcc5daab2b979254e83c0dcd2d8b72580f07ced682eafb4c6cd68229c9686664  ${OMP_FILE}" | sha256sum --check
+echo "574074a4e84797180e0bda0d133da5f01fbda89ecdb450134c7e566b9a389212  ${OMP_FILE}" | sha256sum --check
 install -Dm755 "${OMP_FILE}" /usr/bin/oh-my-posh
 rm -f "${OMP_FILE}"
 
