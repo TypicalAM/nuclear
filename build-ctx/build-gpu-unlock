@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euox pipefail
+
+kver=$(ls /usr/lib/modules | sort -V | tail -n1)
+rev=7eb51bccae0a0b7e599e084d971170e9a1e82d0c
+nv=610.43.03
+
+dnf -y install python3 zstd make gcc tar xz git
+
+git clone https://github.com/Zagitta/gpu-unlock /tmp/gpu-unlock
+git -C /tmp/gpu-unlock checkout "$rev"
+cd /tmp/gpu-unlock
+
+# fetch_artifacts.py does not verify hashes, so check them here
+# (same values as packaging/rpm/gpu-unlock.spec upstream)
+make inputs INPUTS=/tmp/inputs
+(cd /tmp/inputs && sha256sum -c - <<SUMS
+7e118923c7a23edc36114d63273a46e3e04e9af98695a42203e7ac2dfe9fc1dc  NVIDIA-kernel-module-source-$nv.tar.xz
+e084451db730a6df29d3d74f655749c4d236e3c945f7d94b5205e84318fe2f90  NVIDIA-Linux-x86_64-$nv-no-compat32.run
+SUMS
+)
+
+# Firmware and the dracut drop-in that loads the module before nvidia
+make firmware INPUTS=/tmp/inputs ASSETS=/tmp/assets
+make install-firmware install-dracut ASSETS=/tmp/assets
+
+# The module, signed like the nvidia ones
+make -C kernel/gpu_unlock KDIR=/usr/src/kernels/"$kver"
+ko=/usr/lib/modules/$kver/extra/gpu_unlock.ko
+install -Dm0644 kernel/gpu_unlock/gpu_unlock.ko "$ko"
+/usr/src/kernels/"$kver"/scripts/sign-file sha256 \
+	/run/secrets/nuclear.key /etc/pki/akmods/certs/nuclear.crt "$ko"
+xz -C crc32 -f "$ko"
+depmod -a "$kver"
