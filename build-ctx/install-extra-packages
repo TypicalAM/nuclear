@@ -30,11 +30,11 @@ mv eza /usr/bin
 rm -f "${EZA_FILE}"
 
 # renovate: repo=jesseduffield/lazygit
-LAZYGIT_TAG="v0.66.0"
+LAZYGIT_TAG="v0.66.2"
 LAZYGIT_VERSION="${LAZYGIT_TAG#v}"
 LAZYGIT_FILE="lazygit_${LAZYGIT_VERSION}_linux_${ARCH}.tar.gz"
 curl -fsSLo "${LAZYGIT_FILE}" "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_TAG}/${LAZYGIT_FILE}"
-echo "5b45541155d20bd32bf2cc5ab5b7e3d91c2eebf0fb1242281350edc27d59d2b7  ${LAZYGIT_FILE}" | sha256sum --check
+echo "158efc9ddfa1241fab5fb3526bb442c8dc6c4b1904d73213b9e4e93e03c52034  ${LAZYGIT_FILE}" | sha256sum --check
 tar xzf "${LAZYGIT_FILE}"
 mv lazygit /usr/bin
 rm -rf "${LAZYGIT_FILE}" LICENSE README.md
