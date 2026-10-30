@@ -3,6 +3,14 @@
   "extends": [
     "config:recommended"
   ],
+  "packageRules": [
+    {
+      "description": "ublue-os/remove-unwanted-software fails on ubuntu-26.04 (no powershell package); stay on 24.04 until it is fixed",
+      "matchManagers": ["github-actions"],
+      "matchDepNames": ["ubuntu"],
+      "enabled": false
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
