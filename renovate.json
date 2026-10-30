@@ -12,6 +12,14 @@
         "# renovate: repo=(?<depName>\\S+)\\n[A-Z_]+_TAG=\"(?<currentValue>[^\"]+)\"\\n(?:.*\\n)*?echo \"(?<currentDigest>[a-f0-9]+) "
       ],
       "datasourceTemplate": "github-release-attachments"
+    },
+    {
+      "customType": "regex",
+      "description": "gpu-unlock commit pinned in build-gpu-unlock; it has no release tags, so follow main",
+      "managerFilePatterns": ["/^build-ctx/build-gpu-unlock$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) currentValue=(?<currentValue>\\S+)\\nGPU_UNLOCK_REV=(?<currentDigest>[a-f0-9]+)"
+      ]
     }
   ]
 }

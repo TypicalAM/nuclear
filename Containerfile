@@ -48,6 +48,7 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=secret,id=sb-key,target=/run/secrets/nuclear.key \
     /ctx/install-rpm-packages-nvidia && \
     /ctx/build-kmod && \
+    /ctx/build-gpu-unlock && \
     /ctx/build-initramfs && \
     rm -rf /var/run /var/lib/dnf && \
     systemctl enable supergfxd.service
