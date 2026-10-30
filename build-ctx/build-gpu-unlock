@@ -2,17 +2,19 @@
 set -euox pipefail
 
 kver=$(ls /usr/lib/modules | sort -V | tail -n1)
-rev=7eb51bccae0a0b7e599e084d971170e9a1e82d0c
-nv=610.43.03
+# renovate: datasource=git-refs depName=https://github.com/Zagitta/gpu-unlock currentValue=main
+GPU_UNLOCK_REV=7eb51bccae0a0b7e599e084d971170e9a1e82d0c
 
 dnf -y install python3 zstd make gcc tar xz git
 
 git clone https://github.com/Zagitta/gpu-unlock /tmp/gpu-unlock
-git -C /tmp/gpu-unlock checkout "$rev"
+git -C /tmp/gpu-unlock checkout "$GPU_UNLOCK_REV"
 cd /tmp/gpu-unlock
+nv=$(sed -n 's/^NV *:= *//p' Makefile)
 
 # fetch_artifacts.py does not verify hashes, so check them here
-# (same values as packaging/rpm/gpu-unlock.spec upstream)
+# (same values as packaging/rpm/gpu-unlock.spec upstream); a bumped NVIDIA
+# version upstream fails here until the hashes are updated
 make inputs INPUTS=/tmp/inputs
 (cd /tmp/inputs && sha256sum -c - <<SUMS
 7e118923c7a23edc36114d63273a46e3e04e9af98695a42203e7ac2dfe9fc1dc  NVIDIA-kernel-module-source-$nv.tar.xz
