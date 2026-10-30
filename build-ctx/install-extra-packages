@@ -71,11 +71,11 @@ install -Dm755 "${OMP_FILE}" /usr/bin/oh-my-posh
 rm -f "${OMP_FILE}"
 
 # renovate: repo=twpayne/chezmoi
-CHEZMOI_TAG="v2.73.0"
+CHEZMOI_TAG="v2.73.3"
 CHEZMOI_VERSION="${CHEZMOI_TAG#v}"
 CHEZMOI_FILE="chezmoi_${CHEZMOI_VERSION}_linux-glibc_${GOARCH}.tar.gz"
 curl -fsSLo "${CHEZMOI_FILE}" "https://github.com/twpayne/chezmoi/releases/download/${CHEZMOI_TAG}/${CHEZMOI_FILE}"
-echo "b597729b687af4488a848240134cb633de8ca0f04e0d26d48f400ee2ac338ffa  ${CHEZMOI_FILE}" | sha256sum --check
+echo "6e5827598cbfc02d132b04f95b5ea10efb5b79230e2a4a0e52df4af144a8ee9f  ${CHEZMOI_FILE}" | sha256sum --check
 tar xzf "${CHEZMOI_FILE}" chezmoi
 mv chezmoi /usr/bin
 rm -f "${CHEZMOI_FILE}"
