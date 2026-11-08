@@ -1,0 +1,5 @@
+# Read cosign signatures for our images from the registry (sha256-<digest>.sig tags).
+# Verification itself is switched on in policy.json.
+docker:
+  docker.piaseczny.dev/machine/nuclear:
+    use-sigstore-attachments: true

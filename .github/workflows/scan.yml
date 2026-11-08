@@ -1,0 +1,32 @@
+name: Scan image
+run-name: Scan published image for known CVEs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * MON'     # a few days after the Friday build
+
+permissions: {}
+
+jobs:
+  grype:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+    - name: Registry login
+      env:
+        REGISTRY_USERNAME: ${{ secrets.REGISTRY_USER }}
+        REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASS }}
+      run: |
+        mkdir -p ~/.docker
+        echo "$REGISTRY_PASSWORD" | podman login docker.piaseczny.dev \
+          --username "$REGISTRY_USERNAME" --password-stdin --authfile ~/.docker/config.json
+
+    - name: Scan latest image
+      uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+      with:
+        image: docker.piaseczny.dev/machine/nuclear:latest
+        fail-build: true
+        severity-cutoff: critical
+        only-fixed: true

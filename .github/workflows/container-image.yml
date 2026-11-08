@@ -1,7 +1,7 @@
 name: Build image
 run-name: Build image
 
-on: 
+on:
   workflow_dispatch:
   push:
     branches:
@@ -12,13 +12,27 @@ on:
   schedule:
     - cron: '30 13 * * FRI'    # Triggers Fri at 13:30
 
+# Nothing is writable unless a job asks for it
+permissions: {}
+
 env:
   IMAGE_REGISTRY: docker.piaseczny.dev
   IMAGE_NAME: machine/nuclear
 
+# Never let two runs race to push the same tags
+concurrency:
+  group: build-image
+  cancel-in-progress: false
+
 jobs:
   io-image:
     runs-on: ubuntu-26.04
+    # Holds the Secure Boot and cosign keys; restricted to the main branch in the repo settings
+    environment: signing
+    permissions:
+      contents: read
+      id-token: write       # build provenance attestation
+      attestations: write
     steps:
     - name: Maximize build space
       run: |
@@ -39,16 +53,28 @@ jobs:
         mount-opts: compress-force=zstd:2
 
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        persist-credentials: false
+
+    - name: Install cosign
+      uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+      with:
+        # v2 keeps the signature layout (sha256-<digest>.sig tags) that containers/image
+        # on the host reads with use-sigstore-attachments
+        cosign-release: v2.6.5
 
     - name: Podman login
       env:
         REGISTRY_USERNAME: ${{ secrets.REGISTRY_USER }}
         REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASS }}
       run: |
-        echo "$REGISTRY_PASSWORD" | podman login docker.piaseczny.dev \
+        # One auth file for podman, cosign and syft
+        mkdir -p ~/.docker
+        echo "$REGISTRY_PASSWORD" | podman login "$IMAGE_REGISTRY" \
           --username "$REGISTRY_USERNAME" \
-          --password-stdin
+          --password-stdin \
+          --authfile ~/.docker/config.json
 
     - name: Write Secure Boot key to file
       run: |
@@ -58,13 +84,93 @@ jobs:
         SB_PRIVATE_KEY: ${{ secrets.SB_PRIVATE_KEY }}
 
     - name: Build base image
-      run: podman build --secret id=sb-key,src=sb.key -t ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest --target base .
+      run: podman build --secret id=sb-key,src=sb.key -t "$IMAGE_REGISTRY/$IMAGE_NAME:latest" --target base .
 
     - name: Build NVIDIA image
-      run: podman build --secret id=sb-key,src=sb.key -t ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia --target nvidia .
+      run: podman build --secret id=sb-key,src=sb.key -t "$IMAGE_REGISTRY/$IMAGE_NAME:nvidia" --target nvidia .
+
+    - name: Remove Secure Boot key
+      if: always()
+      run: shred -u sb.key || rm -f sb.key
 
     - name: Push base image
-      run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      id: push-base
+      run: podman push --authfile ~/.docker/config.json --digestfile base.digest "$IMAGE_REGISTRY/$IMAGE_NAME:latest"
 
     - name: Push NVIDIA image
-      run: podman push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:nvidia
+      id: push-nvidia
+      run: podman push --authfile ~/.docker/config.json --digestfile nvidia.digest "$IMAGE_REGISTRY/$IMAGE_NAME:nvidia"
+
+    - name: Read digests
+      id: digest
+      run: |
+        echo "base=$(cat base.digest)" >> "$GITHUB_OUTPUT"
+        echo "nvidia=$(cat nvidia.digest)" >> "$GITHUB_OUTPUT"
+
+    # Signatures and attestations are added after the push, by digest, so they bind to exactly
+    # what the registry holds. The host verifies the key-based signature; the keyless one (Fulcio cert + Rekor entry,
+    # bound to this workflow's identity) lets anyone else verify provenance.
+    - name: Sign images
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        BASE_DIGEST: ${{ steps.digest.outputs.base }}
+        NVIDIA_DIGEST: ${{ steps.digest.outputs.nvidia }}
+      run: |
+        for d in "$BASE_DIGEST" "$NVIDIA_DIGEST"; do
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY \
+            --registry-referrers-mode legacy \
+            "$IMAGE_REGISTRY/$IMAGE_NAME@$d"
+        done
+
+    - name: Sign images (keyless, public Rekor log)
+      env:
+        BASE_DIGEST: ${{ steps.digest.outputs.base }}
+        NVIDIA_DIGEST: ${{ steps.digest.outputs.nvidia }}
+      run: |
+        for d in "$BASE_DIGEST" "$NVIDIA_DIGEST"; do
+          cosign sign --yes --registry-referrers-mode legacy \
+            "$IMAGE_REGISTRY/$IMAGE_NAME@$d"
+        done
+
+    - name: Generate SBOMs
+      uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+      with:
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.base }}
+        format: spdx-json
+        output-file: sbom-base.spdx.json
+        upload-artifact: true
+        artifact-name: sbom-base.spdx.json
+
+    - name: Generate NVIDIA SBOM
+      uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+      with:
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.nvidia }}
+        format: spdx-json
+        output-file: sbom-nvidia.spdx.json
+        upload-artifact: true
+        artifact-name: sbom-nvidia.spdx.json
+
+    - name: Attach SBOMs
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        BASE_DIGEST: ${{ steps.digest.outputs.base }}
+        NVIDIA_DIGEST: ${{ steps.digest.outputs.nvidia }}
+      run: |
+        cosign attest --yes --key env://COSIGN_PRIVATE_KEY --type spdxjson \
+          --predicate sbom-base.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$BASE_DIGEST"
+        cosign attest --yes --key env://COSIGN_PRIVATE_KEY --type spdxjson \
+          --predicate sbom-nvidia.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$NVIDIA_DIGEST"
+
+    - name: Attest build provenance (base)
+      uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+      with:
+        subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+        subject-digest: ${{ steps.digest.outputs.base }}
+
+    - name: Attest build provenance (NVIDIA)
+      uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+      with:
+        subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+        subject-digest: ${{ steps.digest.outputs.nvidia }}
