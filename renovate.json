@@ -1,13 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "docker:pinDigests"
   ],
   "customManagers": [
     {
       "customType": "regex",
       "description": "GitHub release binaries in install-extra-packages; bumps the tag and its pinned checksum together",
-      "managerFilePatterns": ["/^build-ctx/install-extra-packages$/"],
+      "managerFilePatterns": [
+        "/^build-ctx/install-extra-packages$/"
+      ],
       "matchStrings": [
         "# renovate: repo=(?<depName>\\S+)\\n[A-Z_]+_TAG=\"(?<currentValue>[^\"]+)\"\\n(?:.*\\n)*?echo \"(?<currentDigest>[a-f0-9]+) "
       ],
@@ -16,7 +20,9 @@
     {
       "customType": "regex",
       "description": "gpu-unlock commit pinned in build-gpu-unlock; it has no release tags, so follow main",
-      "managerFilePatterns": ["/^build-ctx/build-gpu-unlock$/"],
+      "managerFilePatterns": [
+        "/^build-ctx/build-gpu-unlock$/"
+      ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) currentValue=(?<currentValue>\\S+)\\nGPU_UNLOCK_REV=(?<currentDigest>[a-f0-9]+)"
       ]

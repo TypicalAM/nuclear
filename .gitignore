@@ -1,3 +1,6 @@
 *.swp
 compose/cache
 **.ociarchive
+cosign.key
+cosign.pass
+cosign.pub
