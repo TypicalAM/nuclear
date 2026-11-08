@@ -136,6 +136,8 @@ jobs:
     # SBOM and provenance come after the images are pushed and signed, and none of them may
     # fail or hold up the build. SBOMs are generated from the images already in local storage
     # (an uncompressed export), not by pulling the multi-GB images back from the registry.
+    # Only the RPM database is cataloged: the other 33 syft catalogers walk every file in the
+    # image and took ~6.5 min per image. Pinned release binaries are listed in build-ctx.
     - name: Install syft
       id: syft
       continue-on-error: true
@@ -154,7 +156,7 @@ jobs:
         for t in latest nvidia; do
           podman save --format oci-dir --uncompressed \
             -o "oci-$t" "$IMAGE_REGISTRY/$IMAGE_NAME:$t"
-          "$SYFT" "oci-dir:oci-$t" -q --select-catalogers "image,-file" \
+          "$SYFT" "oci-dir:oci-$t" -q --select-catalogers "rpm" \
             -o "spdx-json=sbom-$t.spdx.json"
           rm -rf "oci-$t"
         done
