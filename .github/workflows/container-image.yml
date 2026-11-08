@@ -133,25 +133,36 @@ jobs:
             "$IMAGE_REGISTRY/$IMAGE_NAME@$d"
         done
 
-    - name: Generate SBOMs
-      uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+    # SBOM and provenance come after the images are pushed and signed, and none of them may
+    # fail or hold up the build. SBOMs are generated from the images already in local storage
+    # (an uncompressed export), not by pulling the multi-GB images back from the registry.
+    - name: Install syft
+      id: syft
+      continue-on-error: true
+      uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
       with:
-        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.base }}
-        format: spdx-json
-        output-file: sbom-base.spdx.json
-        upload-artifact: true
-        artifact-name: sbom-base.spdx.json
+        syft-version: v1.57.0
 
-    - name: Generate NVIDIA SBOM
-      uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
-      with:
-        image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.nvidia }}
-        format: spdx-json
-        output-file: sbom-nvidia.spdx.json
-        upload-artifact: true
-        artifact-name: sbom-nvidia.spdx.json
+    - name: Generate SBOMs
+      id: sbom
+      if: steps.syft.outcome == 'success'
+      continue-on-error: true
+      timeout-minutes: 10
+      env:
+        SYFT: ${{ steps.syft.outputs.cmd }}
+      run: |
+        for t in latest nvidia; do
+          podman save --format oci-dir --uncompressed \
+            -o "oci-$t" "$IMAGE_REGISTRY/$IMAGE_NAME:$t"
+          "$SYFT" "oci-dir:oci-$t" -q --select-catalogers "image,-file" \
+            -o "spdx-json=sbom-$t.spdx.json"
+          rm -rf "oci-$t"
+        done
 
     - name: Attach SBOMs
+      if: steps.sbom.outcome == 'success'
+      continue-on-error: true
+      timeout-minutes: 5
       env:
         COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -159,17 +170,19 @@ jobs:
         NVIDIA_DIGEST: ${{ steps.digest.outputs.nvidia }}
       run: |
         cosign attest --yes --key env://COSIGN_PRIVATE_KEY --type spdxjson \
-          --predicate sbom-base.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$BASE_DIGEST"
+          --predicate sbom-latest.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$BASE_DIGEST"
         cosign attest --yes --key env://COSIGN_PRIVATE_KEY --type spdxjson \
           --predicate sbom-nvidia.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$NVIDIA_DIGEST"
 
     - name: Attest build provenance (base)
+      continue-on-error: true
       uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
       with:
         subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
         subject-digest: ${{ steps.digest.outputs.base }}
 
     - name: Attest build provenance (NVIDIA)
+      continue-on-error: true
       uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
       with:
         subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
