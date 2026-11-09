@@ -160,12 +160,16 @@ jobs:
         for t in latest nvidia; do
           if [ "$t" = latest ]; then d="$BASE_DIGEST"; else d="$NVIDIA_DIGEST"; fi
           podman create --name "sbom-$t" "$IMAGE_REGISTRY/$IMAGE_NAME:$t" >/dev/null
-          mkdir -p "rootfs-$t/usr/lib/sysimage"
+          mkdir -p "rootfs-$t/usr/lib/sysimage" "rootfs-$t/etc"
           podman cp "sbom-$t:/usr/lib/sysimage/rpm" "rootfs-$t/usr/lib/sysimage/"
+          # os-release tells syft the distro; without it grype cannot match any advisory
+          podman cp "sbom-$t:/usr/lib/os-release" "rootfs-$t/usr/lib/os-release"
+          ln -s ../usr/lib/os-release "rootfs-$t/etc/os-release"
           podman rm -f "sbom-$t" >/dev/null
           "$SYFT" "dir:rootfs-$t" -q --select-catalogers "rpm" \
             --source-name "$IMAGE_REGISTRY/$IMAGE_NAME" --source-version "$d" \
             -o "spdx-json=sbom-$t.spdx.json"
+          grep -q 'distro=' "sbom-$t.spdx.json" || { echo "::error::SBOM for $t has no distro"; exit 1; }
         done
 
     - name: Install grype
