@@ -2,9 +2,9 @@ name: Scan image
 run-name: Scan published image for known CVEs
 
 on:
+  # Manual only: grype's own cataloging of the multi-GB image takes 20+ minutes. The build now
+  # lists fixable vulnerabilities from the RPM SBOM in its run summary.
   workflow_dispatch:
-  schedule:
-    - cron: '0 8 * * MON'     # a few days after the Friday build
 
 permissions: {}
 

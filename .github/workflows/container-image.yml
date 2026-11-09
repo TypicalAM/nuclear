@@ -152,13 +152,45 @@ jobs:
       timeout-minutes: 10
       env:
         SYFT: ${{ steps.syft.outputs.cmd }}
+        BASE_DIGEST: ${{ steps.digest.outputs.base }}
+        NVIDIA_DIGEST: ${{ steps.digest.outputs.nvidia }}
+      run: |
+        # Only the RPM database is needed, so copy just that out of a container created from
+        # the image (instant) instead of exporting or scanning the multi-GB image.
+        for t in latest nvidia; do
+          if [ "$t" = latest ]; then d="$BASE_DIGEST"; else d="$NVIDIA_DIGEST"; fi
+          podman create --name "sbom-$t" "$IMAGE_REGISTRY/$IMAGE_NAME:$t" >/dev/null
+          mkdir -p "rootfs-$t/usr/lib/sysimage"
+          podman cp "sbom-$t:/usr/lib/sysimage/rpm" "rootfs-$t/usr/lib/sysimage/"
+          podman rm -f "sbom-$t" >/dev/null
+          "$SYFT" "dir:rootfs-$t" -q --select-catalogers "rpm" \
+            --source-name "$IMAGE_REGISTRY/$IMAGE_NAME" --source-version "$d" \
+            -o "spdx-json=sbom-$t.spdx.json"
+        done
+
+    - name: Install grype
+      id: grype
+      if: steps.sbom.outcome == 'success'
+      continue-on-error: true
+      uses: anchore/scan-action/download-grype@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+
+    # Informational: list fixable vulnerabilities in the run summary, never blocks the build
+    - name: List known vulnerabilities
+      id: vulns
+      if: steps.grype.outcome == 'success'
+      continue-on-error: true
+      timeout-minutes: 5
+      env:
+        GRYPE: ${{ steps.grype.outputs.cmd }}
       run: |
         for t in latest nvidia; do
-          podman save --format oci-dir --uncompressed \
-            -o "oci-$t" "$IMAGE_REGISTRY/$IMAGE_NAME:$t"
-          "$SYFT" "oci-dir:oci-$t" -q --select-catalogers "rpm" \
-            -o "spdx-json=sbom-$t.spdx.json"
-          rm -rf "oci-$t"
+          "$GRYPE" "sbom:sbom-$t.spdx.json" -q --only-fixed -o table > "vulns-$t.txt" || true
+          {
+            echo "### Fixable vulnerabilities in :$t"
+            echo '```'
+            cat "vulns-$t.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
         done
 
     - name: Attach SBOMs
@@ -205,9 +237,11 @@ jobs:
         ATTACH_OUTCOME: ${{ steps.attach.outcome }}
         PROV_BASE_OUTCOME: ${{ steps.prov-base.outcome }}
         PROV_NVIDIA_OUTCOME: ${{ steps.prov-nvidia.outcome }}
+        GRYPE_OUTCOME: ${{ steps.grype.outcome }}
+        VULNS_OUTCOME: ${{ steps.vulns.outcome }}
       run: |
         rc=0
-        for v in SYFT SBOM ATTACH PROV_BASE PROV_NVIDIA; do
+        for v in SYFT SBOM GRYPE VULNS ATTACH PROV_BASE PROV_NVIDIA; do
           o="${v}_OUTCOME"
           if [ "${!o}" = failure ]; then echo "::error::supply chain step $v failed"; rc=1; fi
         done
