@@ -162,6 +162,7 @@ jobs:
         done
 
     - name: Attach SBOMs
+      id: attach
       if: steps.sbom.outcome == 'success'
       continue-on-error: true
       timeout-minutes: 5
@@ -171,12 +172,15 @@ jobs:
         BASE_DIGEST: ${{ steps.digest.outputs.base }}
         NVIDIA_DIGEST: ${{ steps.digest.outputs.nvidia }}
       run: |
-        cosign attest --yes --key env://COSIGN_PRIVATE_KEY --type spdxjson \
+        # --tlog-upload=false: a full SBOM is far larger than Rekor accepts. The attestation is
+        # still signed with our key; verify with --insecure-ignore-tlog.
+        cosign attest --yes --tlog-upload=false --key env://COSIGN_PRIVATE_KEY --type spdxjson \
           --predicate sbom-latest.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$BASE_DIGEST"
-        cosign attest --yes --key env://COSIGN_PRIVATE_KEY --type spdxjson \
+        cosign attest --yes --tlog-upload=false --key env://COSIGN_PRIVATE_KEY --type spdxjson \
           --predicate sbom-nvidia.spdx.json "$IMAGE_REGISTRY/$IMAGE_NAME@$NVIDIA_DIGEST"
 
     - name: Attest build provenance (base)
+      id: prov-base
       continue-on-error: true
       uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
       with:
@@ -184,8 +188,27 @@ jobs:
         subject-digest: ${{ steps.digest.outputs.base }}
 
     - name: Attest build provenance (NVIDIA)
+      id: prov-nvidia
       continue-on-error: true
       uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
       with:
         subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
         subject-digest: ${{ steps.digest.outputs.nvidia }}
+
+    # continue-on-error reports a failed optional step as green; fail the run loudly instead,
+    # after everything that matters (push, sign) is already done.
+    - name: Fail if an optional supply chain step failed
+      if: always()
+      env:
+        SYFT_OUTCOME: ${{ steps.syft.outcome }}
+        SBOM_OUTCOME: ${{ steps.sbom.outcome }}
+        ATTACH_OUTCOME: ${{ steps.attach.outcome }}
+        PROV_BASE_OUTCOME: ${{ steps.prov-base.outcome }}
+        PROV_NVIDIA_OUTCOME: ${{ steps.prov-nvidia.outcome }}
+      run: |
+        rc=0
+        for v in SYFT SBOM ATTACH PROV_BASE PROV_NVIDIA; do
+          o="${v}_OUTCOME"
+          if [ "${!o}" = failure ]; then echo "::error::supply chain step $v failed"; rc=1; fi
+        done
+        exit $rc
