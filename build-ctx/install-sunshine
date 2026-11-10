@@ -6,23 +6,33 @@
 # (lizardbyte/beta, pvermeer/sunshine) are rolling and routinely lack a build for a brand-new
 # Fedora, which would block image builds. Pinning the AppImage keeps the host reproducible.
 #
-# The AppImage resolves its libraries via an $ORIGIN rpath and its assets (web UI + encoder
+# The AppImage resolves its libraries via an $ORIGIN runpath and its assets (web UI + encoder
 # shaders) via paths relative to the CWD. Neither survives the file capability we must set for
 # screen capture (a setcap'd binary runs in secure-execution mode, where glibc ignores $ORIGIN
 # and LD_LIBRARY_PATH). So we normalize the layout at build time:
 #   - extract to a fixed location, /usr/lib/sunshine
 #   - patchelf the bundled binary to an ABSOLUTE rpath so its libs load under secure-exec
-#   - setcap cap_sys_admin+p for KMS/DRM capture on Wayland (KDE/GNOME lack wlr-export-dmabuf);
-#     ostree/bootc preserves the security.capability xattr into the deployed image
+#   - setcap cap_sys_admin,cap_sys_nice+p (the same caps the AppImage's own --install sets):
+#     sys_admin for KMS/DRM capture on Wayland (KDE/GNOME lack wlr-export-dmabuf), sys_nice for
+#     realtime scheduling; ostree/bootc preserves the security.capability xattr into the image
 #   - ship /usr/bin/sunshine, a launcher that cd's into the AppDir (so the relative asset paths
-#     resolve) and forces the GTK tray onto x11 (its Wayland backend crashes), running as the
-#     invoking user so audio reaches the user's PipeWire/PulseAudio socket.
+#     resolve) and pins the Qt tray to xcb (the only platform plugin the bundle ships),
+#     running as the invoking user so audio reaches the user's PipeWire/PulseAudio socket.
+#
+# Renovate bumps the three SUNSHINE_* lines below together (see renovate.json). Releases from
+# 2026 ship per-arch assets named Sunshine_<version>_<arch>.AppImage and the binary is plain
+# usr/bin/sunshine; both were different in the 2025 releases this script used to pin.
 
 set -euo pipefail
 
-SUNSHINE_VERSION="2025.924.154138"
-SUNSHINE_FILE="sunshine.AppImage"
-SUNSHINE_SHA256="83921dd4e09fd517007150bc6a1a93b63db22a56f7da99025a3d7765c24b75fa"
+if [ "$(uname -m)" != x86_64 ]; then
+	echo "install-sunshine: only the x86_64 AppImage is pinned" >&2
+	exit 1
+fi
+
+SUNSHINE_VERSION="2026.914.233613"
+SUNSHINE_FILE="Sunshine_${SUNSHINE_VERSION}_x86_64.AppImage"
+SUNSHINE_SHA256="6f80297a853bcf8cda114ff131b5c0a8c9a4d96a2a9c3dee1f04c39c54206846"
 
 workdir="$(mktemp -d)"
 cd "$workdir"
@@ -37,17 +47,18 @@ chmod +x "${SUNSHINE_FILE}"
 rm -rf /usr/lib/sunshine
 mv squashfs-root /usr/lib/sunshine
 
-BIN="/usr/lib/sunshine/usr/bin/sunshine-${SUNSHINE_VERSION}"
+BIN="/usr/lib/sunshine/usr/bin/sunshine"
 patchelf --set-rpath /usr/lib/sunshine/usr/lib "${BIN}"
-setcap cap_sys_admin+p "${BIN}"
+setcap cap_sys_admin,cap_sys_nice+p "${BIN}"
 
 install -Dm755 /dev/stdin /usr/bin/sunshine <<'EOF'
 #!/usr/bin/env bash
 # Launcher for the vendored Sunshine AppImage (see build-ctx/install-sunshine).
-# cd into the AppDir so Sunshine's relative asset/shader/web-UI paths resolve; force the GTK
-# tray onto x11 (Wayland backend crashes). Run as your user (no sudo) so audio works.
+# cd into the AppDir so Sunshine's relative asset/shader/web-UI paths resolve; the bundled Qt
+# only has the xcb platform plugin, so pin it. Run as your user (no sudo) so audio works.
 cd /usr/lib/sunshine || exit 1
-export GDK_BACKEND=x11
+export QT_QPA_PLATFORM=xcb
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/sunshine"
 exec ./usr/bin/sunshine "$@"
 EOF
 
