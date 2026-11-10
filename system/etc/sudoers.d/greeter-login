@@ -1,0 +1,2 @@
+# Let adam run the login-screen typing helper without a second password prompt
+adam ALL=(root) NOPASSWD: /usr/bin/greeter-login

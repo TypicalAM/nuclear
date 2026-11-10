@@ -1,0 +1,84 @@
+#!/usr/bin/bash
+# greeter-login: type your password into the SDDM login screen from an ssh session, so the
+# machine can boot unattended (TPM unlock) and be logged into by hand from another computer:
+#
+#     ssh -t tygrys20 sudo greeter-login
+#
+# ydotool injects keystrokes below the compositor, which Wayland normally forbids. To keep
+# that from becoming a way for your own processes to type into your desktop, this refuses to
+# run while an unlocked user session is active on seat0; only the login screen or a locked
+# session qualifies.
+set -euo pipefail
+
+unlocked_user_session() {
+	local s class active locked seat k v
+	for s in $(loginctl list-sessions --no-legend | awk '{print $1}'); do
+		class="" active="" locked="" seat=""
+		while IFS== read -r k v; do
+			case $k in
+			Class) class=$v ;;
+			Active) active=$v ;;
+			LockedHint) locked=$v ;;
+			Seat) seat=$v ;;
+			esac
+		done < <(loginctl show-session "$s" -p Class -p Active -p LockedHint -p Seat)
+		if [ "$class" = user ] && [ "$active" = yes ] && [ "$seat" = seat0 ] && [ "$locked" != yes ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+if [ "${1:-}" = --check ]; then
+	if unlocked_user_session; then
+		echo "refuse: an unlocked user session is active on seat0"
+		exit 1
+	fi
+	echo "ok: login screen or a locked session"
+	exit 0
+fi
+
+if [ "$EUID" -ne 0 ]; then
+	echo "run as root: sudo greeter-login" >&2
+	exit 1
+fi
+
+if unlocked_user_session; then
+	echo "greeter-login: a user session is already unlocked on seat0, refusing to type" >&2
+	exit 1
+fi
+
+read -rs -p "Password to type into the login screen: " pw </dev/tty
+echo
+
+umask 077
+tmp=$(mktemp /run/greeter-login.XXXXXX)
+sock=$(mktemp -u /run/greeter-login.sock.XXXXXX)
+daemon=""
+cleanup() {
+	[ -n "$daemon" ] && kill "$daemon" 2>/dev/null || true
+	shred -u "$tmp" 2>/dev/null || rm -f "$tmp"
+	rm -f "$sock"
+}
+trap cleanup EXIT
+
+printf '%s' "$pw" >"$tmp"
+unset pw
+
+ydotoold --socket-path "$sock" --socket-perm 0600 &
+daemon=$!
+for _ in $(seq 1 30); do
+	[ -S "$sock" ] && break
+	sleep 0.1
+done
+[ -S "$sock" ] || {
+	echo "greeter-login: ydotoold did not start" >&2
+	exit 1
+}
+export YDOTOOL_SOCKET="$sock"
+
+ydotool key 42:1 42:0 # tap Shift: wakes a blanked screen without typing anything
+sleep 1
+ydotool type --key-delay 25 --file="$tmp"
+ydotool key 28:1 28:0 # Enter
+echo "typed. Check the screen (or ssh in and run: loginctl list-sessions)."

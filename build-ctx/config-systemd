@@ -13,3 +13,6 @@ systemctl enable nix-daemon.service
 systemctl enable nix.mount
 systemctl disable rpm-ostree-countme.service
 systemctl disable rpm-ostree-countme.timer
+
+# sudo ignores (or warns about) sudoers.d files that are not mode 0440
+chmod 0440 /etc/sudoers.d/greeter-login
