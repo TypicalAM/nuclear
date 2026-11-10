@@ -46,6 +46,7 @@ jobs:
 
     - name: Mount BTRFS for podman storage
       id: container-storage-action
+      # renovate: datasource=git-refs depName=https://github.com/ublue-os/container-storage-action currentValue=main
       uses: ublue-os/container-storage-action@dc1f4c8f17b672069e921f001132f7cf98a423a6
       continue-on-error: true
       with:

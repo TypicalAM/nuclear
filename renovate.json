@@ -26,6 +26,42 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) currentValue=(?<currentValue>\\S+)\\nGPU_UNLOCK_REV=(?<currentDigest>[a-f0-9]+)"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Sunshine AppImage in install-sunshine; bumps the version and its pinned checksum together",
+      "managerFilePatterns": [
+        "/^build-ctx/install-sunshine$/"
+      ],
+      "matchStrings": [
+        "SUNSHINE_VERSION=\"(?<currentValue>[^\"]+)\"\\nSUNSHINE_FILE=\"[^\"]+\"\\nSUNSHINE_SHA256=\"(?<currentDigest>[a-f0-9]+)\""
+      ],
+      "depNameTemplate": "LizardByte/Sunshine",
+      "datasourceTemplate": "github-release-attachments",
+      "extractVersionTemplate": "^v(?<version>.+)$",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "ublue-os/container-storage-action has no releases or tags, so follow main",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/container-image\\.yml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) currentValue=(?<currentValue>\\S+)\\n\\s+uses: \\S+@(?<currentDigest>[a-f0-9]{40})"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Handled by the custom manager above (tracks main)",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepNames": [
+        "ublue-os/container-storage-action"
+      ],
+      "enabled": false
     }
   ]
 }
