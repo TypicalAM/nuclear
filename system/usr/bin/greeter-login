@@ -9,6 +9,8 @@
 # run while an unlocked user session is active on seat0; only the login screen or a locked
 # session qualifies.
 set -euo pipefail
+PATH=/usr/sbin:/usr/bin # do not trust the caller's PATH; this runs as root
+export PATH
 
 unlocked_user_session() {
 	local s class active locked seat k v
@@ -65,7 +67,8 @@ trap cleanup EXIT
 printf '%s' "$pw" >"$tmp"
 unset pw
 
-ydotoold --socket-path "$sock" --socket-perm 0600 &
+# keyboard only: no virtual mouse is needed to log in
+ydotoold --socket-path "$sock" --socket-perm 0600 --mouse-off &
 daemon=$!
 for _ in $(seq 1 30); do
 	[ -S "$sock" ] && break
@@ -77,8 +80,14 @@ done
 }
 export YDOTOOL_SOCKET="$sock"
 
+# The prompt above can take a while; make sure nobody logged in locally in the meantime
+if unlocked_user_session; then
+	echo "greeter-login: a user session became unlocked, not typing" >&2
+	exit 1
+fi
+
 ydotool key 42:1 42:0 # tap Shift: wakes a blanked screen without typing anything
 sleep 1
-ydotool type --key-delay 25 --file="$tmp"
+ydotool type --escape=0 --key-delay 25 --file="$tmp"
 ydotool key 28:1 28:0 # Enter
 echo "typed. Check the screen (or ssh in and run: loginctl list-sessions)."
