@@ -63,7 +63,7 @@ jobs:
       with:
         # v2 keeps the signature layout (sha256-<digest>.sig tags) that containers/image
         # on the host reads with use-sigstore-attachments
-        cosign-release: v2.6.5
+        cosign-release: v3.1.4
 
     - name: Podman login
       env:
