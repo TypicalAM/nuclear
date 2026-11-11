@@ -196,3 +196,9 @@ glibc-langpack-en
 glibc-langpack-pl
 nix
 ydotool
+pipewire-codec-aptx
+qemu-kvm
+vagrant
+vagrant-libvirt
+virt-manager
+waydroid
