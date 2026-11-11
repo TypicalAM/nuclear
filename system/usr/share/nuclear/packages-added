@@ -98,7 +98,6 @@ swappy
 #swww             # not in ashbuk COPR or F44 repos
 wlogout
 yad
-qemu-system-aarch64
 tailscale
 lshw
 htop
