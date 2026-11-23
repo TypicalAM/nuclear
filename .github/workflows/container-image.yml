@@ -177,7 +177,7 @@ jobs:
       id: grype
       if: steps.sbom.outcome == 'success'
       continue-on-error: true
-      uses: anchore/scan-action/download-grype@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+      uses: anchore/scan-action/download-grype@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
 
     # Informational: list fixable vulnerabilities in the run summary, never blocks the build
     - name: List known vulnerabilities
