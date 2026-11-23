@@ -91,10 +91,10 @@ mv backrest/backrest /usr/bin/backrest
 rm -rf backrest "${BACKREST_FILE}"
 
 # renovate: repo=pythops/bluetui
-BLUETUI_TAG="v0.8.2"
+BLUETUI_TAG="v0.8.3"
 BLUETUI_VERSION="${BLUETUI_TAG#v}"
 BLUETUI_FILE="bluetui-${ARCH}-linux-musl"
 curl -fsSLo "${BLUETUI_FILE}" "https://github.com/pythops/bluetui/releases/download/${BLUETUI_TAG}/${BLUETUI_FILE}"
-echo "b476ee473cb4f7a48cd75d440e991bedc835ff5ac704aac1f1992f8e826222fd  ${BLUETUI_FILE}" | sha256sum --check
+echo "45df073c86b6e09fe5cb605532aa05e05632ff820ab48489001c5e758ec021a4  ${BLUETUI_FILE}" | sha256sum --check
 mv "${BLUETUI_FILE}" /usr/bin/bluetui
 chmod +x /usr/bin/bluetui
